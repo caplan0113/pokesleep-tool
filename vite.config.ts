@@ -20,6 +20,11 @@ export default defineConfig({
         ivKo: path.resolve(__dirname, 'iv/index.ko.html'),
         ivZhCn: path.resolve(__dirname, 'iv/index.zh-cn.html'),
         ivZhTw: path.resolve(__dirname, 'iv/index.zh-tw.html'),
+        partyEn: path.resolve(__dirname, 'party/index.html'),
+        partyJa: path.resolve(__dirname, 'party/index.ja.html'),
+        partyKo: path.resolve(__dirname, 'party/index.ko.html'),
+        partyZhCn: path.resolve(__dirname, 'party/index.zh-cn.html'),
+        partyZhTw: path.resolve(__dirname, 'party/index.zh-tw.html'),
       },
       output: {
         manualChunks(id) {
