@@ -9,6 +9,8 @@ class News {
     /** News id (English) */
     ivCalc: NewsArticle[];
 
+    partyCalc: NewsArticle[];
+
     /**
      * Initialize News object.
      * @param data JSON data.
@@ -16,6 +18,7 @@ class News {
     constructor(data: JsonNews) {
         this.researchCalc = data.ResearchCalc.map(x => new NewsArticle(x));
         this.ivCalc = data.IvCalc.map(x => new NewsArticle(x));
+        this.partyCalc = [];
     }
 
     /**
@@ -23,7 +26,7 @@ class News {
      * @param app App name.
      * @returns Articles for the given app.
      */
-    getArticles(app: "ResearchCalc"|"IvCalc") {
+    getArticles(app: "ResearchCalc"|"IvCalc"|"PartyCalc") {
         if (app === "ResearchCalc") {
             return this.researchCalc;
         }
