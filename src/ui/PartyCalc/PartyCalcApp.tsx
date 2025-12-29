@@ -64,6 +64,7 @@ export default function PartyCalcApp() {
       const currentCalcParams = createStrengthParameter({
         ...params,
         helpBonusCount: Math.min(applicableHbCount, 4) as 0 | 1 | 2 | 3 | 4,
+        totalFlags: [true, false, true], // 材料無効
       });
       
       try {

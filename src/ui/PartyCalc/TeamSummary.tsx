@@ -39,7 +39,7 @@ export default function TeamSummary({ teamData }: TeamSummaryProps) {
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <LocalFireDepartmentIcon sx={{ color: "#ff944b", mr: 1 }} />
         <Typography variant="h6" fontWeight="bold">
-          {t('team total (exclude Ingredient)')}: {formatWithComma(Math.floor(totals.total-totals.ingredientEnergy))}
+          {t('team total (Not Ingredient)')}: {formatWithComma(Math.floor(totals.total))}
         </Typography>
       </Box>
 
