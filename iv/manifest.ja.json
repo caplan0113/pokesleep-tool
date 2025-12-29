@@ -4,7 +4,7 @@
   "description": "使い方はかんたん！ ポケモンのレベルやスキルを入力すると、SP や稼ぐエナジー・強さが分かります。",
   "icons": [
     {
-      "src": "favicon.svg",
+      "src": "favicon.ico",
       "sizes": "24x24"
     },
     {

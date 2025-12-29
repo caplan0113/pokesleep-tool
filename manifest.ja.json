@@ -4,7 +4,7 @@
   "description": "使い方はかんたん！ フィールドと総エナジーを入力するだけです。睡眠スコアごとの出現ポケモン数が分かります。",
   "icons": [
     {
-      "src": "favicon.svg",
+      "src": "favicon.ico",
       "sizes": "24x24"
     },
     {
