@@ -44,6 +44,7 @@ interface PwaBannerProps {
  *   Show orignal UI and tells how to add to home screen.
  */
 const PwaBanner = React.memo(({app, pwaCount, onClose}:PwaBannerProps) => {
+    return;
     const { t } = useTranslation();
 
     // iOS: show banner if user visits this page iOsShowPwaBannerThreshold times

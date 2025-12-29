@@ -1,6 +1,7 @@
 import './App.css';
 import ResearchCalcApp from './ResearchCalc/ResearchCalcApp';
 import IvCalcApp from './IvCalc/IvCalcApp';
+import PartyCalcApp from './PartyCalc/PartyCalcApp';
 import { useCallback, useEffect, useState } from 'react';
 import { ThemeProvider, createTheme } from '@mui/material';
 import AppConfig, {
@@ -69,6 +70,7 @@ export default function App({config}: {config:AppConfig}) {
             <NewsInfo appType={curApp} onAppConfigChange={onAppConfigChange}/>
             {curApp === "ResearchCalc" && <ResearchCalcApp/>}
             {curApp === "IvCalc" && <IvCalcApp/>}
+            {curApp === "PartyCalc" && <PartyCalcApp/>}
             <PwaNotify app={curApp} pwaCount={config.pwacnt} onClose={onPwaBannerClose}/>
         </AppConfigContext.Provider>
     </ThemeProvider>);
@@ -106,8 +108,9 @@ function useMultilingual(config: AppConfig) {
  */
 function useRouter(language: string): [AppType, (v:AppType) => void] {
     const initialApp: AppType = (
-        window.location.pathname.startsWith("/pokesleep-tool/iv/") ?
-        "IvCalc" : "ResearchCalc");
+        window.location.pathname.includes("/iv/") ? "IvCalc" :
+        window.location.pathname.includes("/party/") ? "PartyCalc" : "ResearchCalc"
+    );
 
     const { t, i18n } = useTranslation();
     const [currentApp, setCurrentApp] = useState<AppType>(initialApp);
@@ -142,6 +145,8 @@ function useRouter(language: string): [AppType, (v:AppType) => void] {
         let url = document.location.origin + "/pokesleep-tool/";
         if (currentApp === "IvCalc") {
             url += 'iv/';
+        } else if (currentApp === "PartyCalc") {
+            url += 'party/';
         }
         if (language !== "en") {
             url += `index.${language.toLowerCase()}.html`;

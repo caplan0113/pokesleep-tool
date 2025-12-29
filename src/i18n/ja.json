@@ -8,6 +8,11 @@
             "notice detail1": "グッドスリープデーの間は、[$t(bonus)] の倍率を変更するのを忘れずに。",
             "notice detail2": "[$t(sleep twice)] をチェックすると、分割睡眠したときに出会えるトータルのポケモン数を確認できます。"
         },
+        "PartyCalc": {
+            "title": "パーティ編成",
+            "short title": "パーティ",
+            "description": "パーティのエナジーを計算します"
+        },
         "IvCalc": {
             "title": "個体値計算機 for ポケモンスリープ",
             "short title": "個体値計算機",

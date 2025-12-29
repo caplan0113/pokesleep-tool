@@ -31,6 +31,10 @@ export default function ToolBar({app, onAppChange, onAppConfigChange}: ToolBarPr
         onAppChange("IvCalc");
         setMoreMenuAnchor(null);
     };
+    const partyCalcClick = () => {
+        onAppChange("PartyCalc");
+        setMoreMenuAnchor(null);
+    }
     const moreButtonClick = (event: React.MouseEvent<HTMLElement>) => {
         setMoreMenuAnchor(event.currentTarget);
     };
@@ -77,6 +81,10 @@ export default function ToolBar({app, onAppChange, onAppConfigChange}: ToolBarPr
                 <MenuItem onClick={rpCalcClick}>
                     <ListItemIcon>{app === "IvCalc" ? <CheckIcon/> : <Icon/>}</ListItemIcon>
                     {t("IvCalc.short title")}
+                </MenuItem>
+                <MenuItem onClick={partyCalcClick}>
+                    <ListItemIcon>{app === "PartyCalc" ? <CheckIcon/> : <Icon/>}</ListItemIcon>
+                    {t("PartyCalc.short title")}
                 </MenuItem>
                 <Divider/>
                 <MenuItem onClick={howToMenuClick}>
