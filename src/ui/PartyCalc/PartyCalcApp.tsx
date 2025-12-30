@@ -5,8 +5,9 @@ import PokemonStrength, { createStrengthParameter, loadStrengthParameter, Streng
 import PartyMemberSlot from './PartyMemberSlot';
 import TeamSummary from './TeamSummary';
 import PartyBoxList from './PartyBoxList';
-import { IvAction } from '../IvCalc/IvState';
+import { getInitialIvState, IvAction} from '../IvCalc/IvState';
 import StrengthParameterForm from '../IvCalc/Strength/StrengthParameterForm';
+import EnergyDialog from '../IvCalc/Strength/EnergyDialog';
 
 export default function PartyCalcApp() {
   const [teamSerials, setTeamSerials] = useState<(string | null)[]>(() => {
@@ -20,6 +21,7 @@ export default function PartyCalcApp() {
 
   const [params, setParams] = useState<StrengthParameter>(() => loadStrengthParameter());
   const [tabValue, setTabValue] = useState(0);
+  const [energyDialogOpen, setEnergyDialogOpen] = useState(false);
 
   const handleClearAll = useCallback(() => {
     if (window.confirm("パーティをリセットしますか？")) {
@@ -35,8 +37,20 @@ export default function PartyCalcApp() {
       setParams(newParam);
       localStorage.setItem('PstStrenghParam', JSON.stringify(newParam));
     }
+    if (action.type === "openEnergyDialog") {
+        setEnergyDialogOpen(true);
+    }
+    if (action.type === "closeEnergyDialog") {
+        setEnergyDialogOpen(false);
+    }
+    if (action.type === "changeLowerTab") {
+        setTabValue(1);
+    }
   }, []);
 
+  const defaultIV = getInitialIvState().pokemonIv;
+  const defaultResult = new PokemonStrength(defaultIV, params).calculate();
+  
   const teamData = useMemo(() => {
     // 1. 全メンバーを復元（ニックネーム分離）
     const members = teamSerials.map(s => {
@@ -84,7 +98,7 @@ export default function PartyCalcApp() {
     setTeamSerials((prev) => {
       const emptyIndex = prev.findIndex(s => !s);
       if (emptyIndex === -1) {
-        alert("パーティがいっぱいです。");
+        // alert("パーティがいっぱいです。");
         return prev;
       }
       const newTeam = [...prev];
@@ -135,6 +149,14 @@ export default function PartyCalcApp() {
             dispatch={dispatch} 
             value={params} 
             hasHelpingBonus={teamData.some(d => d?.iv.hasHelpingBonusInActiveSubSkills)} 
+          />
+          <EnergyDialog
+            open={energyDialogOpen}
+            iv={defaultIV}
+            parameter={params}
+            energy={defaultResult.energy}
+            onClose={() => dispatch({ type: "closeEnergyDialog" })}
+            dispatch={dispatch}
           />
         </Box>
       )}

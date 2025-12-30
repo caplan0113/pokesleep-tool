@@ -78,10 +78,10 @@ export default function PartyBoxList({ onSelect, parameter, dispatch }: PartyBox
         {sortedItems.map((item) => (
           <StyledBoxItem 
             key={item.id} 
-            onClick={() => onSelect(`${item.serialize()}@${item.filledNickname(t)}`)}
+            onClick={() => onSelect(`${item.serialize()}`)}
           >
             <header><span className="lv">Lv.</span>{item.iv.level}</header>
-            <PokemonIcon idForm={item.iv.idForm} size={40} />
+            <PokemonIcon idForm={item.iv.idForm} size={30} />
             <footer>{item.filledNickname(t)}</footer>
           </StyledBoxItem>
         ))}
@@ -110,12 +110,12 @@ const StyledBoxItem = styled(ButtonBase)({
   display: 'flex', 
   flexDirection: 'column', 
   alignItems: 'center', 
-  width: '80px', 
+  width: '70px', 
   padding: '8px 4px',
   borderRadius: '8px', 
   border: '1px solid #eee', 
   backgroundColor: '#fff',
   '&:active': { backgroundColor: '#f0f0f0' },
   '& header': { fontSize: '0.7rem', fontWeight: 'bold', '& .lv': { color: '#62d540' } },
-  '& footer': { fontSize: '0.75rem', color: '#666', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+  '& footer': { fontSize: '0.6rem', color: '#666', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
 });
