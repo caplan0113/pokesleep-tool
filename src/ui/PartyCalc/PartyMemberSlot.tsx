@@ -112,7 +112,7 @@ export default function PartyMemberSlot({ member, onRemove }: PartyMemberSlotPro
         }}
       >
         <Typography sx={{ color: '#fff', fontSize: '0.65rem', fontWeight: 'bold' }}>
-          {formatWithComma(Math.floor(result.totalStrength))}
+          {formatWithComma(Math.floor(result.totalStrength))+""}
         </Typography>
       </Box>
     </Paper>
