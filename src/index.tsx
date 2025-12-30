@@ -61,9 +61,9 @@ import i18n from './i18n';
         document.body.appendChild(ins);
     }
 
-    window.addEventListener('load', () => {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/sw.js');
-        }
-    });
+    // window.addEventListener('load', () => {
+    //     if ('serviceWorker' in navigator) {
+    //         navigator.serviceWorker.register('/sw.js');
+    //     }
+    // });
 })();

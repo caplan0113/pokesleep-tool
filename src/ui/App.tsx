@@ -117,11 +117,11 @@ function useRouter(language: string): [AppType, (v:AppType) => void] {
     useEffect(() => {
         // Replace on memory HTML
         document.title = t(`${currentApp}.title`);
-        const manifest = document.querySelector<HTMLLinkElement>("link[rel='manifest']");
-        if (manifest !== null) {
-            const current = manifest.href;
-            manifest.href = current.replace(/manifest.*/, "manifest." + language + ".json");
-        }
+        // const manifest = document.querySelector<HTMLLinkElement>("link[rel='manifest']");
+        // if (manifest !== null) {
+        //     const current = manifest.href;
+        //     manifest.href = current.replace(/manifest.*/, "manifest." + language + ".json");
+        // }
         const description = document.querySelector<HTMLMetaElement>("meta[name='description']");
         if (description !== null) {
             description.content = t(`${currentApp}.description`);
