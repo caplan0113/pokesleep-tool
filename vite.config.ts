@@ -6,7 +6,7 @@ import path from 'path';
 
 export default defineConfig({
   // base: '/pokesleep-tool/',
-  base: process.env.CF_PAGES ? '/' : '/pokesleep-tool/',
+  base: '/',
   plugins: [eslint(), react()],
   build: {
     rollupOptions: {
