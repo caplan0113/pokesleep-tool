@@ -142,7 +142,7 @@ function useRouter(language: string): [AppType, (v:AppType) => void] {
         }
 
         // update URL
-        let url = document.location.origin + "/pokesleep-tool/";
+        let url = document.location.origin + "/";
         if (currentApp === "IvCalc") {
             url += 'iv/';
         } else if (currentApp === "PartyCalc") {

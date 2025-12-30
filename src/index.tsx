@@ -63,7 +63,7 @@ import i18n from './i18n';
 
     window.addEventListener('load', () => {
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/pokesleep-tool/sw.js');
+            navigator.serviceWorker.register('/sw.js');
         }
     });
 })();
