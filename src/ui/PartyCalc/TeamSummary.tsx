@@ -21,7 +21,6 @@ export default function TeamSummary({ teamData }: TeamSummaryProps) {
     acc.berry += data.result.berryTotalStrength;
     acc.ingredientEnergy += data.result.ingStrength;
     acc.skill += (data.result.skillStrength + data.result.skillStrength2);
-    console.log(`${data.nickname}\ntotal: ${data.result.totalStrength}\nberry: ${data.result.berryTotalStrength}\ningredientEnergy: ${data.result.ingStrength}\nskill: ${data.result.skillStrength} + ${data.result.skillStrength2}`);
 
     data.result.ingredients.forEach((ing) => {
       if (ing.name !== "unknown") {
