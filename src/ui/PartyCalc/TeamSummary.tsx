@@ -27,8 +27,9 @@ export default function TeamSummary({ teamData }: TeamSummaryProps) {
       acc.skill += 0;
     } else {
       acc.skill += (data.result.skillStrength + data.result.skillStrength2);
+      
     }
-    
+
     data.result.ingredients.forEach((ing) => {
       if (ing.name !== "unknown") {
         acc.ingCounts[ing.name] = (acc.ingCounts[ing.name] || 0) + ing.count;
