@@ -81,12 +81,24 @@ export default function PartyCalcApp() {
         helpBonusCount: Math.min(applicableHbCount, 4) as 0 | 1 | 2 | 3 | 4,
         totalFlags: [true, false, true], // 材料無効
       });
+
+      const pokeStrength = new PokemonStrength(iv, currentCalcParams).calculate();
+      let skillStrength = 0;
+      if (iv.pokemon.skill.includes("Ingredient Magnet S") ||
+          iv.pokemon.skill.includes("Cooking Power-Up S") ||
+          iv.pokemon.skill.includes("Ingredient Draw S")
+      ){
+        skillStrength = 0;
+      } else {
+        skillStrength = pokeStrength.skillStrength + pokeStrength.skillStrength2;
+      }
       
       try {
         return { 
           iv, 
           nickname: nickname || iv.pokemonName,
-          result: new PokemonStrength(iv, currentCalcParams).calculate() 
+          result: pokeStrength,
+          skillStrength: skillStrength
         };
       } catch {
         return null;

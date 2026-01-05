@@ -9,7 +9,7 @@ import IngredientIcon from '../IvCalc/IngredientIcon';
 import { IngredientName } from '../../data/pokemons';
 
 interface TeamSummaryProps {
-  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult } | null)[];
+  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number } | null)[];
 }
 
 export default function TeamSummary({ teamData }: TeamSummaryProps) {
@@ -20,14 +20,7 @@ export default function TeamSummary({ teamData }: TeamSummaryProps) {
     acc.total += data.result.totalStrength;
     acc.berry += data.result.berryTotalStrength;
     acc.ingredientEnergy += data.result.ingStrength;
-    if (data.iv.pokemon.skill.includes("Ingredient Magnet S") ||
-        data.iv.pokemon.skill.includes("Cooking Power-Up S") ||
-        data.iv.pokemon.skill.includes("Ingredient Draw S")
-    ){
-      acc.skill += 0;
-    } else {
-      acc.skill += (data.result.skillStrength + data.result.skillStrength2);
-    }
+    acc.skill += data.skillStrength;
 
     data.result.ingredients.forEach((ing) => {
       if (ing.name !== "unknown") {

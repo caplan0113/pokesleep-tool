@@ -9,7 +9,7 @@ import IngredientIcon from '../IvCalc/IngredientIcon';
 import { formatWithComma } from '../../util/NumberUtil';
 
 interface PartyMemberSlotProps {
-  member: { iv: PokemonIv; nickname: string; result: StrengthResult } | null;
+  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number } | null;
   onRemove: () => void;
 }
 
@@ -36,7 +36,7 @@ export default function PartyMemberSlot({ member, onRemove }: PartyMemberSlotPro
     );
   }
 
-  const { iv, nickname, result } = member;
+  const { iv, nickname, result, skillStrength } = member;
 
   return (
     <Paper 
@@ -111,8 +111,12 @@ export default function PartyMemberSlot({ member, onRemove }: PartyMemberSlotPro
           textAlign: 'center' 
         }}
       >
+        {/* <Typography sx={{ color: '#fff', fontSize: '0.65rem', fontWeight: 'bold' }}>
+          {"total: " + formatWithComma(Math.floor(result.totalStrength))}
+        </Typography> */}
         <Typography sx={{ color: '#fff', fontSize: '0.65rem', fontWeight: 'bold' }}>
-          {formatWithComma(Math.floor(result.totalStrength))+""}
+          {"Berry: " + formatWithComma(Math.floor(result.berryTotalStrength))}
+          {" / Skill: " + formatWithComma(Math.floor(skillStrength)) + " ("+result.skillCount.toFixed(1)+")"}
         </Typography>
       </Box>
     </Paper>
