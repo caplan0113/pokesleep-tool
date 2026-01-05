@@ -20,8 +20,15 @@ export default function TeamSummary({ teamData }: TeamSummaryProps) {
     acc.total += data.result.totalStrength;
     acc.berry += data.result.berryTotalStrength;
     acc.ingredientEnergy += data.result.ingStrength;
-    acc.skill += (data.result.skillStrength + data.result.skillStrength2);
-
+    if (data.iv.pokemon.skill.includes("Ingredient Magnet S") ||
+        data.iv.pokemon.skill.includes("Cooking Power-Up S") ||
+        data.iv.pokemon.skill.includes("Ingredient Draw S")
+    ){
+      acc.skill += 0;
+    } else {
+      acc.skill += (data.result.skillStrength + data.result.skillStrength2);
+    }
+    
     data.result.ingredients.forEach((ing) => {
       if (ing.name !== "unknown") {
         acc.ingCounts[ing.name] = (acc.ingCounts[ing.name] || 0) + ing.count;
