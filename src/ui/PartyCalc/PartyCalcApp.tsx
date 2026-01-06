@@ -9,6 +9,8 @@ import { getInitialIvState, IvAction} from '../IvCalc/IvState';
 import StrengthParameterForm from '../IvCalc/Strength/StrengthParameterForm';
 import EnergyDialog from '../IvCalc/Strength/EnergyDialog';
 import {PokemonType} from '../../data/pokemons';
+import { IngredientName } from '../../data/pokemons';
+import { getSkillValue } from '../../util/MainSkill'
 
 export default function PartyCalcApp() {
   const [teamSerials, setTeamSerials] = useState<(string | null)[]>(() => {
@@ -81,6 +83,30 @@ export default function PartyCalcApp() {
       return acc;
     }, {} as Record<PokemonType, Set<string>>);
 
+    const strengthPerHelpCalcParams = createStrengthParameter({
+      ...params,
+      addHelpingBonusEffect: false,
+      totalFlags: [true, false, true], // 食材無効
+      period: -1
+    });
+    const teamStrengthPerHelp = members.map(m => {
+      if (!m) return null;
+      const pokeStrength = new PokemonStrength(m.iv, strengthPerHelpCalcParams).calculate();
+      return {berry: pokeStrength.berryTotalStrength, ing: pokeStrength.ingredients};
+    });
+    const teamStrengthPerHelpBerryTotal: number = teamStrengthPerHelp.reduce((acc, val) => {
+      if (!val) return acc;
+      return acc + val.berry;
+    }, 0);
+    const teamStrengthPerHelpIngTotal: Record<IngredientName, number> = teamStrengthPerHelp.reduce((acc, val) => {
+      if (!val) return acc;
+      val.ing.forEach(ing => {
+        if (ing.name === "unknown") return;
+        acc[ing.name] = (acc[ing.name] || 0) + ing.count;
+      });
+      return acc;
+    }, {} as Record<IngredientName, number>);
+
     // 3. 各スロットの個別計算（idx を削除して ESLint エラーを回避）
     return members.map((m) => {
       if (!m) return null;
@@ -106,22 +132,29 @@ export default function PartyCalcApp() {
         }
       });
 
-      const pokeStrength = new PokemonStrength(iv, currentCalcParams).calculate();
+      const pokeStrength = new PokemonStrength(iv, currentCalcParams)
+      const pokeStrengthCal = pokeStrength.calculate();
       let skillStrength = 0;
       if (iv.pokemon.skill.includes("Ingredient Magnet S") ||
           iv.pokemon.skill.includes("Cooking Power-Up S") ||
           iv.pokemon.skill.includes("Ingredient Draw S")
       ){
         skillStrength = 0;
+      } else if (iv.pokemon.skill.includes("Helper Boost")) {
+        const skillBaseValue = getSkillValue("Helper Boost", pokeStrength.getSkillLevel(), Math.max(teamSpecies[iv.pokemon.type].size, 1));
+        skillStrength = skillBaseValue * pokeStrengthCal.skillCount * teamStrengthPerHelpBerryTotal;
+        console.log("Helper Boost skillStrength:", skillStrength, skillBaseValue, pokeStrengthCal.skillCount, teamStrengthPerHelpBerryTotal, teamStrengthPerHelpIngTotal);
+      } else if (iv.pokemon.skill.includes("Extra Helpful S")) {
+        skillStrength = pokeStrengthCal.skillValue * teamStrengthPerHelpBerryTotal / 5;
       } else {
-        skillStrength = pokeStrength.skillStrength + pokeStrength.skillStrength2;
+        skillStrength = pokeStrengthCal.skillStrength + pokeStrengthCal.skillStrength2;
       }
       
       try {
         return { 
           iv, 
           nickname: nickname || iv.pokemonName,
-          result: pokeStrength,
+          result: pokeStrengthCal,
           skillStrength: skillStrength
         };
       } catch {
