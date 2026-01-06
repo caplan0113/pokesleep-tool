@@ -8,6 +8,7 @@ import PartyBoxList from './PartyBoxList';
 import { getInitialIvState, IvAction} from '../IvCalc/IvState';
 import StrengthParameterForm from '../IvCalc/Strength/StrengthParameterForm';
 import EnergyDialog from '../IvCalc/Strength/EnergyDialog';
+import {PokemonType} from '../../data/pokemons';
 
 export default function PartyCalcApp() {
   const [teamSerials, setTeamSerials] = useState<(string | null)[]>(() => {
@@ -66,6 +67,19 @@ export default function PartyCalcApp() {
 
     // 2. パーティ内の合計HB数を算出
     const totalHbCount = members.filter(m => m?.iv.hasHelpingBonusInActiveSubSkills).length;
+    const teamTypeAndLevel = members.map(m => {
+      if (!m) return defaultIV.changeLevel(1);
+      return m.iv;
+    });
+
+    const teamSpecies: Record<PokemonType, Set<string>> = members.reduce((acc, m) => {
+      if (!m) return acc;
+      const name = m.iv.pokemon.name;
+      const type = m.iv.pokemon.type;
+      if (!acc[type]) acc[type] = new Set<string>();
+      acc[type].add(name);
+      return acc;
+    }, {} as Record<PokemonType, Set<string>>);
 
     // 3. 各スロットの個別計算（idx を削除して ESLint エラーを回避）
     return members.map((m) => {
@@ -75,11 +89,21 @@ export default function PartyCalcApp() {
       const isOwnerHB = iv.hasHelpingBonusInActiveSubSkills;
       const applicableHbCount = isOwnerHB ? Math.max(0, totalHbCount - 1) : totalHbCount;
 
+      const berryBurstTeam = teamTypeAndLevel.filter(mm => m.iv != mm).map(mm => ({
+        type: mm.pokemon.type,
+        level: mm.level
+      }));
+
       const currentCalcParams = createStrengthParameter({
         ...params,
         addHelpingBonusEffect: false,
         helpBonusCount: Math.min(applicableHbCount, 4) as 0 | 1 | 2 | 3 | 4,
-        totalFlags: [true, false, true], // 材料無効
+        totalFlags: [true, false, true], // 食材無効
+        berryBurstTeam: {
+          auto: false,
+          members: berryBurstTeam,
+          species: Math.max(teamSpecies[iv.pokemon.type].size, 1)
+        }
       });
 
       const pokeStrength = new PokemonStrength(iv, currentCalcParams).calculate();
