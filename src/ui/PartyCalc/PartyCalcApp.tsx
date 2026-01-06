@@ -100,13 +100,13 @@ export default function PartyCalcApp() {
       return acc + val.berry;
     }, 0);
 
-    const teamStrengthPerHelpIngTotal: Record<IngredientName, number> = teamStrengthPerHelp.reduce((acc, val) => {
-      val.ing.forEach(ing => {
-        if (ing.name === "unknown") return;
-        acc[ing.name] = (acc[ing.name] || 0) + ing.count;
-      });
-      return acc;
-    }, {} as Record<IngredientName, number>);
+    // const teamStrengthPerHelpIngTotal: Record<IngredientName, number> = teamStrengthPerHelp.reduce((acc, val) => {
+    //   val.ing.forEach(ing => {
+    //     if (ing.name === "unknown") return;
+    //     acc[ing.name] = (acc[ing.name] || 0) + ing.count;
+    //   });
+    //   return acc;
+    // }, {} as Record<IngredientName, number>);
 
     // 3. 各スロットの個別計算（idx を削除して ESLint エラーを回避）
     return members.map((m) => {
@@ -136,20 +136,39 @@ export default function PartyCalcApp() {
       const pokeStrength = new PokemonStrength(iv, currentCalcParams)
       const pokeStrengthCal = pokeStrength.calculate();
       let skillStrength = 0;
+      let skillIngTotal;
       if (iv.pokemon.skill.includes("Ingredient Magnet S") ||
           iv.pokemon.skill.includes("Cooking Power-Up S") ||
           iv.pokemon.skill.includes("Ingredient Draw S")
       ){
         skillStrength = 0;
+        skillIngTotal = null;
       } else if (iv.pokemon.skill.includes("Helper Boost")) {
         const skillBaseValue = getSkillValue("Helper Boost", pokeStrength.getSkillLevel(), Math.max(teamSpecies[iv.pokemon.type].size, 1));
         skillStrength = skillBaseValue * pokeStrengthCal.skillCount * teamStrengthPerHelpBerryTotal;
-        console.log("Helper Boost skillStrength:", skillStrength, skillBaseValue, pokeStrengthCal.skillCount, teamStrengthPerHelpBerryTotal, teamStrengthPerHelpIngTotal);
+        skillIngTotal = teamStrengthPerHelp.reduce((acc, val) => {
+          val.ing.forEach(ing => {
+            if (ing.name === "unknown") return;
+            acc[ing.name] = (acc[ing.name] || 0) + (ing.count * skillBaseValue * pokeStrengthCal.skillCount);
+          });
+          return acc;
+        }, {} as Record<IngredientName, number>);
+
+        // console.log("Helper Boost skillStrength:", skillStrength, skillBaseValue, pokeStrengthCal.skillCount, teamStrengthPerHelpBerryTotal, skillIngTotal);
       } else if (iv.pokemon.skill.includes("Extra Helpful S")) {
         skillStrength = pokeStrengthCal.skillValue * teamStrengthPerHelpBerryTotal / teamStrengthPerHelp.length;
-        console.log("Extra Helpful S skillStrength:", skillStrength, pokeStrengthCal.skillValue, teamStrengthPerHelpBerryTotal, teamStrengthPerHelp.length);
+        skillIngTotal = teamStrengthPerHelp.reduce((acc, val) => {
+          val.ing.forEach(ing => {
+            if (ing.name === "unknown") return;
+            acc[ing.name] = (acc[ing.name] || 0) + (ing.count * pokeStrengthCal.skillValue / teamStrengthPerHelp.length);
+          });
+          return acc;
+        }, {} as Record<IngredientName, number>);
+
+        // console.log("Extra Helpful S skillStrength:", skillStrength, pokeStrengthCal.skillValue, teamStrengthPerHelpBerryTotal, teamStrengthPerHelp.length, skillIngTotal);
       } else {
         skillStrength = pokeStrengthCal.skillStrength + pokeStrengthCal.skillStrength2;
+        skillIngTotal = null;
       }
       
       try {
@@ -157,7 +176,8 @@ export default function PartyCalcApp() {
           iv, 
           nickname: nickname || iv.pokemonName,
           result: pokeStrengthCal,
-          skillStrength: skillStrength
+          skillStrength: skillStrength,
+          skillIngTotal: skillIngTotal
         };
       } catch {
         return null;

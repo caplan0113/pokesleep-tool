@@ -9,7 +9,7 @@ import IngredientIcon from '../IvCalc/IngredientIcon';
 import { IngredientName } from '../../data/pokemons';
 
 interface TeamSummaryProps {
-  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number } | null)[];
+  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number; skillIngTotal: Record<string, number> | null } | null)[];
 }
 
 export default function TeamSummary({ teamData }: TeamSummaryProps) {
@@ -27,6 +27,13 @@ export default function TeamSummary({ teamData }: TeamSummaryProps) {
         acc.ingCounts[ing.name] = (acc.ingCounts[ing.name] || 0) + ing.count;
       }
     });
+
+    if (data.skillIngTotal != null) {
+      Object.entries(data.skillIngTotal).forEach(([name, count]) => {
+        acc.ingCounts[name as IngredientName] = (acc.ingCounts[name as IngredientName] || 0) + count;
+      });
+    }
+    
     return acc;
   }, { total: 0, berry: 0, ingredientEnergy: 0, skill: 0, ingCounts: {} as Record<IngredientName, number> });
 

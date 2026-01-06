@@ -9,7 +9,7 @@ import IngredientIcon from '../IvCalc/IngredientIcon';
 import { formatWithComma } from '../../util/NumberUtil';
 
 interface PartyMemberSlotProps {
-  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number } | null;
+  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null } | null;
   onRemove: () => void;
 }
 
