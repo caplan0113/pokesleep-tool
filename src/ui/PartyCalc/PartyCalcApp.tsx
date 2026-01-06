@@ -51,7 +51,7 @@ export default function PartyCalcApp() {
     }
   }, []);
 
-  const defaultIV = getInitialIvState().pokemonIv;
+  const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
   const defaultResult = new PokemonStrength(defaultIV, params).calculate();
   
   const teamData = useMemo(() => {
@@ -70,7 +70,7 @@ export default function PartyCalcApp() {
     // 2. パーティ内の合計HB数を算出
     const totalHbCount = members.filter(m => m?.iv.hasHelpingBonusInActiveSubSkills).length;
     const teamTypeAndLevel = members.map(m => {
-      if (!m) return defaultIV.changeLevel(1);
+      if (!m) return defaultIV;
       return m.iv;
     });
 
@@ -89,17 +89,18 @@ export default function PartyCalcApp() {
       totalFlags: [true, false, true], // 食材無効
       period: -1
     });
-    const teamStrengthPerHelp = members.map(m => {
-      if (!m) return null;
+    const teamStrengthPerHelp = members.reduce((acc, m) => {
+      if (!m) return acc;
       const pokeStrength = new PokemonStrength(m.iv, strengthPerHelpCalcParams).calculate();
-      return {berry: pokeStrength.berryTotalStrength, ing: pokeStrength.ingredients};
-    });
+      acc.push({berry: pokeStrength.berryTotalStrength, ing: pokeStrength.ingredients});
+      return acc;
+    }, [] as {berry: number; ing: {name: IngredientName; count: number}[]}[]);
+
     const teamStrengthPerHelpBerryTotal: number = teamStrengthPerHelp.reduce((acc, val) => {
-      if (!val) return acc;
       return acc + val.berry;
     }, 0);
+
     const teamStrengthPerHelpIngTotal: Record<IngredientName, number> = teamStrengthPerHelp.reduce((acc, val) => {
-      if (!val) return acc;
       val.ing.forEach(ing => {
         if (ing.name === "unknown") return;
         acc[ing.name] = (acc[ing.name] || 0) + ing.count;
@@ -145,7 +146,8 @@ export default function PartyCalcApp() {
         skillStrength = skillBaseValue * pokeStrengthCal.skillCount * teamStrengthPerHelpBerryTotal;
         console.log("Helper Boost skillStrength:", skillStrength, skillBaseValue, pokeStrengthCal.skillCount, teamStrengthPerHelpBerryTotal, teamStrengthPerHelpIngTotal);
       } else if (iv.pokemon.skill.includes("Extra Helpful S")) {
-        skillStrength = pokeStrengthCal.skillValue * teamStrengthPerHelpBerryTotal / 5;
+        skillStrength = pokeStrengthCal.skillValue * teamStrengthPerHelpBerryTotal / teamStrengthPerHelp.length;
+        console.log("Extra Helpful S skillStrength:", skillStrength, pokeStrengthCal.skillValue, teamStrengthPerHelpBerryTotal, teamStrengthPerHelp.length);
       } else {
         skillStrength = pokeStrengthCal.skillStrength + pokeStrengthCal.skillStrength2;
       }
