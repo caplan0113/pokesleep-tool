@@ -11,6 +11,8 @@ import EnergyDialog from '../IvCalc/Strength/EnergyDialog';
 import {PokemonType} from '../../data/pokemons';
 import { IngredientName } from '../../data/pokemons';
 import { getSkillValue } from '../../util/MainSkill'
+import BoxItemDialog from '../IvCalc/Box/BoxItemDialog';
+import { PokemonBoxItem } from '../../util/PokemonBox';
 
 const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
 
@@ -33,11 +35,13 @@ export default function PartyCalcApp() {
   });
 
   // 現在のパーティを取得
-  const teamSerials = allTeams[currentTeamIndex];
+  
 
   const [params, setParams] = useState<StrengthParameter>(() => loadStrengthParameter());
   const [tabValue, setTabValue] = useState(0);
   const [energyDialogOpen, setEnergyDialogOpen] = useState(false);
+  const [boxItemDialogOpen, setBoxItemDialogOpen] = useState(false);
+  const [teamItemEditIdx, setTeamItemEditIdx] = useState<number | null>(null);
 
   // 3. データを保存する共通関数
   const saveTeams = (newAllTeams: (string | null)[][]) => {
@@ -66,19 +70,21 @@ export default function PartyCalcApp() {
       localStorage.setItem('PstStrenghParam', JSON.stringify(newParam));
     }
     if (action.type === "openEnergyDialog") {
-        setEnergyDialogOpen(true);
+      setEnergyDialogOpen(true);
     }
     if (action.type === "closeEnergyDialog") {
-        setEnergyDialogOpen(false);
+      setEnergyDialogOpen(false);
     }
     if (action.type === "changeLowerTab") {
-        setTabValue(1);
+      setTabValue(1);
     }
   }, []);
 
   const defaultResult = new PokemonStrength(defaultIV, params).calculate();
   
   const teamData = useMemo(() => {
+    const teamSerials = allTeams[currentTeamIndex];
+
     // 1. 全メンバーを復元（ニックネーム分離）
     const members = teamSerials.map(s => {
       if (!s) return null;
@@ -207,7 +213,7 @@ export default function PartyCalcApp() {
         return null;
       }
     });
-  }, [teamSerials, params]);
+  }, [allTeams, currentTeamIndex, params]);
 
   // handleSelectFromBox などの更新
   const handleSelectFromBox = useCallback((fullSerial: string) => {
@@ -229,6 +235,33 @@ export default function PartyCalcApp() {
     newAllTeams[currentTeamIndex] = currentTeam;
     saveTeams(newAllTeams);
   }, [allTeams, currentTeamIndex]);
+
+  const handleEditMember = useCallback((idx: number) => {
+    setTeamItemEditIdx(idx);
+    setBoxItemDialogOpen(true);
+  }, []);
+
+  const onBoxItemDialogClose = useCallback(() => {
+    setBoxItemDialogOpen(false);
+  }, []);
+
+  const onBoxItemDialogChange = useCallback((value: PokemonBoxItem) => {
+    if (!value) return;
+    if (teamItemEditIdx === null) return;
+
+    const fullSerial = `${value.iv.serialize()}@${value.nickname || ""}`;
+    allTeams[currentTeamIndex][teamItemEditIdx] = fullSerial;
+    const newAllTeams = [...allTeams];
+    saveTeams(newAllTeams);
+
+    setTeamItemEditIdx(null);
+  }, [allTeams, currentTeamIndex, teamItemEditIdx]);
+
+  const editMemberBoxItem = (teamItemEditIdx !== null && teamData[teamItemEditIdx] !== null) ? new PokemonBoxItem(
+    teamData[teamItemEditIdx].iv,
+    teamData[teamItemEditIdx].nickname,
+    -1
+  ) : null;
 
   return (
     <Box sx={{ p: 2, pb: 15 }}>
@@ -256,8 +289,8 @@ export default function PartyCalcApp() {
 
       <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
         {teamData.map((data, idx) => (
-          <Box key={`slot-${idx}-${teamSerials[idx] || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
-            <PartyMemberSlot member={data} onRemove={() => handleRemoveMember(idx)} />
+          <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
+            <PartyMemberSlot member={data} onRemove={() => handleRemoveMember(idx)} onEdit={() => handleEditMember(idx)} />
           </Box>
         ))}
       </Box>
@@ -290,6 +323,10 @@ export default function PartyCalcApp() {
           />
         </Box>
       )}
+      <BoxItemDialog
+            open={boxItemDialogOpen} boxItem={editMemberBoxItem}
+            isEdit={true}
+            onClose={onBoxItemDialogClose} onChange={onBoxItemDialogChange}/>
     </Box>
   );
 }

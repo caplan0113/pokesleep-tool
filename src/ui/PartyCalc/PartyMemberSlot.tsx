@@ -1,6 +1,8 @@
 import React from 'react';
 import { Box, Paper, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+// import EditDocument from '@mui/icons-material/EditDocument';
+import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
 import { StrengthResult } from '../../util/PokemonStrength';
 import PokemonIv from '../../util/PokemonIv';
 import PokemonIcon from '../IvCalc/PokemonIcon';
@@ -11,9 +13,10 @@ import { formatWithComma } from '../../util/NumberUtil';
 interface PartyMemberSlotProps {
   member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null } | null;
   onRemove: () => void;
+  onEdit: () => void;
 }
 
-export default function PartyMemberSlot({ member, onRemove }: PartyMemberSlotProps) {
+export default function PartyMemberSlot({ member, onRemove, onEdit }: PartyMemberSlotProps) {
   // エラー回避のため、使用していない場合は取得しないか、削除します
   // const { t } = useTranslation(); 
 
@@ -51,10 +54,17 @@ export default function PartyMemberSlot({ member, onRemove }: PartyMemberSlotPro
     >
       <IconButton 
         size="small" 
+        onClick={onEdit} 
+        sx={{ position: 'absolute', top: 0, left: 0, p: 0.2 }}
+      >
+        <EditNoteOutlinedIcon sx={{ fontSize: 18 }} />
+      </IconButton>
+      <IconButton 
+        size="small" 
         onClick={onRemove} 
         sx={{ position: 'absolute', top: 0, right: 0, p: 0.2 }}
       >
-        <CloseIcon sx={{ fontSize: 14 }} />
+        <CloseIcon sx={{ fontSize: 18 }} />
       </IconButton>
 
       <PokemonIcon idForm={iv.idForm} size={36} />
