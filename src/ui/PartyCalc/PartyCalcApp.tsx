@@ -12,6 +12,8 @@ import {PokemonType} from '../../data/pokemons';
 import { IngredientName } from '../../data/pokemons';
 import { getSkillValue } from '../../util/MainSkill'
 
+const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
+
 export default function PartyCalcApp() {
   const [teamSerials, setTeamSerials] = useState<(string | null)[]>(() => {
     const saved = localStorage.getItem('PstPartySelection');
@@ -51,7 +53,6 @@ export default function PartyCalcApp() {
     }
   }, []);
 
-  const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
   const defaultResult = new PokemonStrength(defaultIV, params).calculate();
   
   const teamData = useMemo(() => {
