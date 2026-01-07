@@ -15,26 +15,49 @@ import { getSkillValue } from '../../util/MainSkill'
 const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
 
 export default function PartyCalcApp() {
-  const [teamSerials, setTeamSerials] = useState<(string | null)[]>(() => {
-    const saved = localStorage.getItem('PstPartySelection');
+  // 1. パーティ全体のデータを管理 (5セット分)
+  const [allTeams, setAllTeams] = useState<(string | null)[][]>(() => {
+    const saved = localStorage.getItem('PstPartySelectionGroups');
     try {
-      return saved ? JSON.parse(saved) : [null, null, null, null, null];
+      // 5セット分の配列を初期化
+      return saved ? JSON.parse(saved) : Array(5).fill(null).map(() => [null, null, null, null, null]);
     } catch {
-      return [null, null, null, null, null];
+      return Array(5).fill(null).map(() => [null, null, null, null, null]);
     }
   });
+
+  // 2. 現在表示中のパーティ番号 (0~4)
+  const [currentTeamIndex, setCurrentTeamIndex] = useState<number>(() => {
+    const savedIdx = localStorage.getItem('PstCurrentTeamIndex');
+    return savedIdx ? parseInt(savedIdx, 10) : 0;
+  });
+
+  // 現在のパーティを取得
+  const teamSerials = allTeams[currentTeamIndex];
 
   const [params, setParams] = useState<StrengthParameter>(() => loadStrengthParameter());
   const [tabValue, setTabValue] = useState(0);
   const [energyDialogOpen, setEnergyDialogOpen] = useState(false);
 
+  // 3. データを保存する共通関数
+  const saveTeams = (newAllTeams: (string | null)[][]) => {
+    setAllTeams(newAllTeams);
+    localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
+  };
+
+  // 4. パーティ切り替え
+  const handleSwitchTeam = (idx: number) => {
+    setCurrentTeamIndex(idx);
+    localStorage.setItem('PstCurrentTeamIndex', idx.toString());
+  };
+
   const handleClearAll = useCallback(() => {
-    if (window.confirm("パーティをリセットしますか？")) {
-      const empty = [null, null, null, null, null];
-      setTeamSerials(empty);
-      localStorage.setItem('PstPartySelection', JSON.stringify(empty));
+    if (window.confirm(`パーティ ${currentTeamIndex + 1} をリセットしますか？`)) {
+      const newAllTeams = [...allTeams];
+      newAllTeams[currentTeamIndex] = [null, null, null, null, null];
+      saveTeams(newAllTeams);
     }
-  }, []);
+  }, [allTeams, currentTeamIndex]);
 
   const dispatch = useCallback((action: IvAction) => {
     if (action.type === "changeParameter") {
@@ -186,36 +209,51 @@ export default function PartyCalcApp() {
     });
   }, [teamSerials, params]);
 
+  // handleSelectFromBox などの更新
   const handleSelectFromBox = useCallback((fullSerial: string) => {
-    setTeamSerials((prev) => {
-      const emptyIndex = prev.findIndex(s => !s);
-      if (emptyIndex === -1) {
-        // alert("パーティがいっぱいです。");
-        return prev;
-      }
-      const newTeam = [...prev];
-      newTeam[emptyIndex] = fullSerial;
-      localStorage.setItem('PstPartySelection', JSON.stringify(newTeam));
-      return newTeam;
-    });
-  }, []);
+    const newAllTeams = [...allTeams];
+    const currentTeam = [...newAllTeams[currentTeamIndex]];
+    
+    const emptyIndex = currentTeam.findIndex(s => !s);
+    if (emptyIndex !== -1) {
+      currentTeam[emptyIndex] = fullSerial;
+      newAllTeams[currentTeamIndex] = currentTeam;
+      saveTeams(newAllTeams);
+    }
+  }, [allTeams, currentTeamIndex]);
 
   const handleRemoveMember = useCallback((idx: number) => {
-    setTeamSerials((prev) => {
-      const newTeam = [...prev];
-      newTeam[idx] = null;
-      localStorage.setItem('PstPartySelection', JSON.stringify(newTeam));
-      return newTeam;
-    });
-  }, []);
+    const newAllTeams = [...allTeams];
+    const currentTeam = [...newAllTeams[currentTeamIndex]];
+    currentTeam[idx] = null;
+    newAllTeams[currentTeamIndex] = currentTeam;
+    saveTeams(newAllTeams);
+  }, [allTeams, currentTeamIndex]);
 
   return (
     <Box sx={{ p: 2, pb: 15 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成</Typography>
-        <Button size="small" variant="text" color="error" onClick={handleClearAll}>全解除</Button>
-      </Box>
+      {/* 5. パーティ切り替えUIの追加 */}
       
+
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成 {currentTeamIndex + 1}</Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+          {[0, 1, 2, 3, 4].map((idx) => (
+            <Button
+              key={idx}
+              size="small"
+              variant={currentTeamIndex === idx ? "contained" : "outlined"}
+              onClick={() => handleSwitchTeam(idx)}
+              sx={{ minWidth: 40, p: 0.3
+               }}
+            >
+              {idx + 1}
+            </Button>
+          ))}
+        </Box>
+        <Button size="small" variant="text" color="error" onClick={handleClearAll}>このセットを解除</Button>
+      </Box>
+
       <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
         {teamData.map((data, idx) => (
           <Box key={`slot-${idx}-${teamSerials[idx] || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
