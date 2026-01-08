@@ -7,9 +7,10 @@ import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
 import PokemonIv from '../../util/PokemonIv';
 import IngredientIcon from '../IvCalc/IngredientIcon';
 import { IngredientName } from '../../data/pokemons';
+import { StrengthParameter } from '../../util/PokemonStrength';
 
 interface TeamSummaryProps {
-  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number; skillIngTotal: Record<string, number> | null } | null)[];
+  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number; skillIngTotal: Record<string, number> | null; param: StrengthParameter } | null)[];
 }
 
 export default function TeamSummary({ teamData }: TeamSummaryProps) {

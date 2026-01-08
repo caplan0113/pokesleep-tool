@@ -3,20 +3,22 @@ import { Box, Paper, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 // import EditDocument from '@mui/icons-material/EditDocument';
 import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
-import { StrengthResult } from '../../util/PokemonStrength';
+import { StrengthParameter, StrengthResult } from '../../util/PokemonStrength';
 import PokemonIv from '../../util/PokemonIv';
 import PokemonIcon from '../IvCalc/PokemonIcon';
 import IngredientIcon from '../IvCalc/IngredientIcon';
 // import { useTranslation } from 'react-i18next'; // インポートは残しておきます
 import { formatWithComma } from '../../util/NumberUtil';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 
 interface PartyMemberSlotProps {
-  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null } | null;
+  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null , param: StrengthParameter } | null;
   onRemove: () => void;
   onEdit: () => void;
+  onView: () => void;
 }
 
-export default function PartyMemberSlot({ member, onRemove, onEdit }: PartyMemberSlotProps) {
+export default function PartyMemberSlot({ member, onRemove, onEdit, onView }: PartyMemberSlotProps) {
   // エラー回避のため、使用していない場合は取得しないか、削除します
   // const { t } = useTranslation(); 
 
@@ -39,7 +41,7 @@ export default function PartyMemberSlot({ member, onRemove, onEdit }: PartyMembe
     );
   }
 
-  const { iv, nickname, result, skillStrength } = member;
+  const { iv, nickname, result, skillStrength, param } = member;
 
   return (
     <Paper 
@@ -52,12 +54,20 @@ export default function PartyMemberSlot({ member, onRemove, onEdit }: PartyMembe
         alignItems: 'center' 
       }}
     >
+      
       <IconButton 
         size="small" 
         onClick={onEdit} 
         sx={{ position: 'absolute', top: 0, left: 0, p: 0.2 }}
       >
         <EditNoteOutlinedIcon sx={{ fontSize: 18 }} />
+      </IconButton>
+      <IconButton 
+        size="small" 
+        onClick={onView} 
+        sx={{ position: 'absolute', top: 0, left: 18, p: 0.2 }}
+      >
+        <InfoOutlinedIcon sx={{ fontSize: 18 }} />
       </IconButton>
       <IconButton 
         size="small" 
@@ -87,7 +97,7 @@ export default function PartyMemberSlot({ member, onRemove, onEdit }: PartyMembe
       </Typography>
 
       <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', mt: -0.5 }}>
-        Lv.{iv.level}
+        Lv.{param.level === 0 ? iv.level : param.level}
       </Typography>
 
       {/* 食材表示（アイコンサイズ固定 16px） */}

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Box, Tabs, Tab, Typography, Button } from '@mui/material';
+import { Box, Tabs, Tab, Typography, Button, Paper } from '@mui/material';
 import PokemonIv from '../../util/PokemonIv';
 import PokemonStrength, { createStrengthParameter, loadStrengthParameter, StrengthParameter } from '../../util/PokemonStrength';
 import PartyMemberSlot from './PartyMemberSlot';
@@ -13,10 +13,15 @@ import { IngredientName } from '../../data/pokemons';
 import { getSkillValue } from '../../util/MainSkill'
 import BoxItemDialog from '../IvCalc/Box/BoxItemDialog';
 import { PokemonBoxItem } from '../../util/PokemonBox';
+import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import { IconButton } from '@mui/material';
+import StrengthBerryIngSkillView  from '../IvCalc/Strength/StrengthBerryIngSkillView';
+import { useTranslation } from 'react-i18next';
 
 const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
 
 export default function PartyCalcApp() {
+  const { t } = useTranslation();
   // 1. パーティ全体のデータを管理 (5セット分)
   const [allTeams, setAllTeams] = useState<(string | null)[][]>(() => {
     const saved = localStorage.getItem('PstPartySelectionGroups');
@@ -42,6 +47,8 @@ export default function PartyCalcApp() {
   const [energyDialogOpen, setEnergyDialogOpen] = useState(false);
   const [boxItemDialogOpen, setBoxItemDialogOpen] = useState(false);
   const [teamItemEditIdx, setTeamItemEditIdx] = useState<number | null>(null);
+  const [strengthTabValue, setStrengthTabValue] = useState(0);
+  const [teamItemViewIdx, setTeamItemViewIdx] = useState<number | null>(null);
 
   // 3. データを保存する共通関数
   const saveTeams = (newAllTeams: (string | null)[][]) => {
@@ -62,6 +69,10 @@ export default function PartyCalcApp() {
       saveTeams(newAllTeams);
     }
   }, [allTeams, currentTeamIndex]);
+
+  const handleStrengthTabChange = () => {
+    setStrengthTabValue(0);
+  }
 
   const dispatch = useCallback((action: IvAction) => {
     if (action.type === "changeParameter") {
@@ -147,7 +158,7 @@ export default function PartyCalcApp() {
 
       const berryBurstTeam = teamTypeAndLevel.filter(mm => m.iv != mm).map(mm => ({
         type: mm.pokemon.type,
-        level: mm.level
+        level: params.level === 0 ? mm.level : params.level
       }));
 
       const currentCalcParams = createStrengthParameter({
@@ -206,7 +217,8 @@ export default function PartyCalcApp() {
           nickname: nickname || iv.pokemonName,
           result: pokeStrengthCal,
           skillStrength: skillStrength,
-          skillIngTotal: skillIngTotal
+          skillIngTotal: skillIngTotal,
+          param: currentCalcParams
         };
       } catch {
         return null;
@@ -233,11 +245,17 @@ export default function PartyCalcApp() {
     currentTeam[idx] = null;
     newAllTeams[currentTeamIndex] = currentTeam;
     saveTeams(newAllTeams);
+    setStrengthTabValue(0);
   }, [allTeams, currentTeamIndex]);
 
   const handleEditMember = useCallback((idx: number) => {
     setTeamItemEditIdx(idx);
     setBoxItemDialogOpen(true);
+  }, []);
+
+  const handleSelectMemberView = useCallback((idx: number) => {
+    setTeamItemViewIdx(idx);
+    setStrengthTabValue(1);
   }, []);
 
   const onBoxItemDialogClose = useCallback(() => {
@@ -262,13 +280,25 @@ export default function PartyCalcApp() {
     -1
   ) : null;
 
+  const viewMemberIV = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].iv : defaultIV;
+  const viewMemberNickname = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].nickname : t(defaultIV.pokemonName);
+  const viewMemberParam = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].param : params;
+  
   return (
     <Box sx={{ p: 2, pb: 15 }}>
       {/* 5. パーティ切り替えUIの追加 */}
       
 
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成 {currentTeamIndex + 1}</Typography>
+        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成 {currentTeamIndex + 1}
+          <IconButton 
+            size="small" 
+            onClick={handleStrengthTabChange} 
+            sx={{ position: 'relative', top: -2.5, left: 5, p: 0.2,  }}
+          >
+        <InfoOutlinedIcon sx={{ fontSize: 24 }} />
+      </IconButton>
+        </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
           {[0, 1, 2, 3, 4].map((idx) => (
             <Button
@@ -289,12 +319,21 @@ export default function PartyCalcApp() {
       <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
         {teamData.map((data, idx) => (
           <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
-            <PartyMemberSlot member={data} onRemove={() => handleRemoveMember(idx)} onEdit={() => handleEditMember(idx)} />
+            <PartyMemberSlot member={data} onRemove={() => handleRemoveMember(idx)} onEdit={() => handleEditMember(idx)} onView={() => handleSelectMemberView(idx)} />
           </Box>
         ))}
       </Box>
 
-      <TeamSummary teamData={teamData} />
+      {strengthTabValue === 0 ?(
+        <TeamSummary teamData={teamData} />
+        ) : (
+          <Paper sx={{ p: 2, bgcolor: '#fdfdfd', borderRadius: 2 }}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>{viewMemberNickname}</Typography>
+            <StrengthBerryIngSkillView pokemonIv={viewMemberIV} settings={viewMemberParam} energyDialogOpen={energyDialogOpen} dispatch={dispatch} />
+          </Paper>
+        )
+      }
+      
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 4, mb: 2 }}>
         <Tabs value={tabValue} onChange={(_e, v) => setTabValue(v)} variant="fullWidth">
