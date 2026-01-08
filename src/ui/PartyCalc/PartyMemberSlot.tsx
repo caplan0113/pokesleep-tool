@@ -10,15 +10,17 @@ import IngredientIcon from '../IvCalc/IngredientIcon';
 // import { useTranslation } from 'react-i18next'; // インポートは残しておきます
 import { formatWithComma } from '../../util/NumberUtil';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ReplayIcon from '@mui/icons-material/Replay';
 
 interface PartyMemberSlotProps {
-  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null , param: StrengthParameter } | null;
+  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null , param: StrengthParameter, editFlag: boolean, isReplayhed: boolean} | null;
   onRemove: () => void;
   onEdit: () => void;
   onView: () => void;
+  onReplay: () => void;
 }
 
-export default function PartyMemberSlot({ member, onRemove, onEdit, onView }: PartyMemberSlotProps) {
+export default function PartyMemberSlot({ member, onRemove, onEdit, onView, onReplay }: PartyMemberSlotProps) {
   // エラー回避のため、使用していない場合は取得しないか、削除します
   // const { t } = useTranslation(); 
 
@@ -41,7 +43,7 @@ export default function PartyMemberSlot({ member, onRemove, onEdit, onView }: Pa
     );
   }
 
-  const { iv, nickname, result, skillStrength, param } = member;
+  const { iv, nickname, result, skillStrength, param, editFlag, isReplayhed } = member;
 
   return (
     <Paper 
@@ -51,7 +53,8 @@ export default function PartyMemberSlot({ member, onRemove, onEdit, onView }: Pa
         height: 135, 
         display: 'flex', 
         flexDirection: 'column', 
-        alignItems: 'center' 
+        alignItems: 'center', 
+        color: editFlag ? 'error.main' : 'inherit',
       }}
     >
       
@@ -68,6 +71,15 @@ export default function PartyMemberSlot({ member, onRemove, onEdit, onView }: Pa
         sx={{ position: 'absolute', top: 0, left: 18, p: 0.2 }}
       >
         <InfoOutlinedIcon sx={{ fontSize: 18 }} />
+      </IconButton>
+
+      <IconButton 
+        size="small" 
+        onClick={onReplay} 
+        disabled={!isReplayhed}
+        sx={{ position: 'absolute', top: 0, right: 18, p: 0.2 }}
+      >
+        <ReplayIcon sx={{ fontSize: 18 }} />
       </IconButton>
       <IconButton 
         size="small" 

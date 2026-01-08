@@ -10,7 +10,7 @@ import { IngredientName } from '../../data/pokemons';
 import { StrengthParameter } from '../../util/PokemonStrength';
 
 interface TeamSummaryProps {
-  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number; skillIngTotal: Record<string, number> | null; param: StrengthParameter } | null)[];
+  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number; skillIngTotal: Record<string, number> | null; param: StrengthParameter; editFlag: boolean} | null)[];
 }
 
 export default function TeamSummary({ teamData }: TeamSummaryProps) {

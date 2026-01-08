@@ -18,20 +18,15 @@ import StrengthParameterSummary from '../IvCalc/Strength/StrengthParameterSummar
 import IvState, { IvAction } from '../IvCalc/IvState';
 
 interface PartyBoxListProps {
+  box: PokemonBox;
   onSelect: (serial: string) => void;
   parameter: StrengthParameter;
   dispatch: React.Dispatch<IvAction>;
 }
 
-export default function PartyBoxList({ onSelect, parameter, dispatch }: PartyBoxListProps) {
+export default function PartyBoxList({ box, onSelect, parameter, dispatch }: PartyBoxListProps) {
   const { t } = useTranslation();
   const evolved = parameter?.evolved ?? true;
-
-  const [box] = useState(() => {
-    const b = new PokemonBox();
-    b.load();
-    return b;
-  });
 
   const [sortConfig, setSortConfig] = useState<BoxSortConfig>(() => loadBoxSortConfig());
   const [filterConfig, setFilterConfig] = useState(new BoxFilterConfig({}));
