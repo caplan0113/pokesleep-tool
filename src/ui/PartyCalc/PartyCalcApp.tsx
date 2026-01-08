@@ -16,13 +16,13 @@ import { PokemonBoxItem } from '../../util/PokemonBox';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { IconButton } from '@mui/material';
 import StrengthBerryIngSkillView  from '../IvCalc/Strength/StrengthBerryIngSkillView';
-import { useTranslation } from 'react-i18next';
+// import { useTranslation } from 'react-i18next';
 import PokemonBox from '../../util/PokemonBox';
 
 const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
 
 export default function PartyCalcApp() {
-  const { t } = useTranslation();
+  // const { t } = useTranslation();
   // 1. パーティ全体のデータを管理 (5セット分)
   const [allTeams, setAllTeams] = useState<(string | null)[][]>(() => {
     const saved = localStorage.getItem('PstPartySelectionGroups');
@@ -64,10 +64,12 @@ export default function PartyCalcApp() {
   };
 
   // 4. パーティ切り替え
-  const handleSwitchTeam = (idx: number) => {
+  const handleSwitchTeam = useCallback((idx: number) => {
     setCurrentTeamIndex(idx);
     localStorage.setItem('PstCurrentTeamIndex', idx.toString());
-  };
+    setStrengthTabValue(0);
+    setTeamItemViewIdx(null);
+  }, []);
 
   const handleClearAll = useCallback(() => {
     if (window.confirm(`パーティ ${currentTeamIndex + 1} をリセットしますか？`)) {
@@ -77,9 +79,10 @@ export default function PartyCalcApp() {
     }
   }, [allTeams, currentTeamIndex]);
 
-  const handleStrengthTabChange = () => {
+  const handleStrengthTabChange = useCallback(() => {
     setStrengthTabValue(0);
-  }
+    setTeamItemViewIdx(null);
+  }, []); 
 
   const dispatch = useCallback((action: IvAction) => {
     if (action.type === "changeParameter") {
@@ -314,59 +317,61 @@ export default function PartyCalcApp() {
     -1
   ) : null;
 
+  if (teamItemViewIdx === null && strengthTabValue === 1) {
+    setStrengthTabValue(0);
+  }
   const viewMemberIV = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].iv : defaultIV;
-  const viewMemberNickname = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].nickname : t(defaultIV.pokemonName);
   const viewMemberParam = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].param : params;
   
   return (
     <Box sx={{ p: 2, pb: 15 }}>
       {/* 5. パーティ切り替えUIの追加 */}
       
-
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
-        <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成 {currentTeamIndex + 1}
-          <IconButton 
-            size="small" 
-            onClick={handleStrengthTabChange} 
-            sx={{ position: 'relative', top: -2.5, left: 5, p: 0.2,  }}
-          >
-        <InfoOutlinedIcon sx={{ fontSize: 24 }} />
-      </IconButton>
-        </Typography>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
-          {[0, 1, 2, 3, 4].map((idx) => (
-            <Button
-              key={idx}
-              size="small"
-              variant={currentTeamIndex === idx ? "contained" : "outlined"}
-              onClick={() => handleSwitchTeam(idx)}
-              sx={{ minWidth: 40, p: 0.3
-               }}
-            >
-              {idx + 1}
-            </Button>
-          ))}
-        </Box>
-        <Button size="small" variant="text" color="error" onClick={handleClearAll}>このセットを解除</Button>
-      </Box>
-
-      <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
-        {teamData.map((data, idx) => (
-          <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
-            <PartyMemberSlot member={data} onRemove={() => handleRemoveMember(idx)} onEdit={() => handleEditMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} />
-          </Box>
-        ))}
-      </Box>
-
       {strengthTabValue === 0 ?(
         <TeamSummary teamData={teamData} />
         ) : (
           <Paper sx={{ p: 2, bgcolor: '#fdfdfd', borderRadius: 2 }}>
-            <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 2 }}>{viewMemberNickname}</Typography>
             <StrengthBerryIngSkillView pokemonIv={viewMemberIV} settings={viewMemberParam} energyDialogOpen={energyDialogOpen} dispatch={dispatch} />
           </Paper>
         )
       }
+      <Box sx={{zIndex: 10, position: 'sticky', top: 0, bgcolor: '#fdfdfd', pt: 1, pb: 1, mt: 2, borderBottom: '1px solid #ddd'}}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, mt: 4}}>
+          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成 {currentTeamIndex + 1}
+            <IconButton 
+              size="small" 
+              onClick={handleStrengthTabChange} 
+              sx={{ position: 'relative', top: -2.5, left: 5, p: 0.2,  }}
+            >
+          <InfoOutlinedIcon sx={{ fontSize: 24, color: (strengthTabValue === 0 ? '#29ce10ff' : 'inherit')}} />
+        </IconButton>
+          </Typography>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+            {[0, 1, 2, 3, 4].map((idx) => (
+              <Button
+                key={idx}
+                size="small"
+                variant={currentTeamIndex === idx ? "contained" : "outlined"}
+                onClick={() => handleSwitchTeam(idx)}
+                sx={{ minWidth: 40, p: 0.3
+                }}
+              >
+                {idx + 1}
+              </Button>
+            ))}
+          </Box>
+          <Button size="small" variant="text" color="error" onClick={handleClearAll}>このセットを解除</Button>
+        </Box>
+
+        <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+          {teamData.map((data, idx) => (
+            <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
+              <PartyMemberSlot member={data} onRemove={() => handleRemoveMember(idx)} onEdit={() => handleEditMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} infoFlag={idx === teamItemViewIdx} />
+            </Box>
+          ))}
+        </Box>
+      </Box>
+      
       
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 4, mb: 2 }}>

@@ -18,9 +18,10 @@ interface PartyMemberSlotProps {
   onEdit: () => void;
   onView: () => void;
   onReplay: () => void;
+  infoFlag: boolean;
 }
 
-export default function PartyMemberSlot({ member, onRemove, onEdit, onView, onReplay }: PartyMemberSlotProps) {
+export default function PartyMemberSlot({ member, onRemove, onEdit, onView, onReplay, infoFlag }: PartyMemberSlotProps) {
   // エラー回避のため、使用していない場合は取得しないか、削除します
   // const { t } = useTranslation(); 
 
@@ -70,7 +71,7 @@ export default function PartyMemberSlot({ member, onRemove, onEdit, onView, onRe
         onClick={onView} 
         sx={{ position: 'absolute', top: 0, left: 18, p: 0.2 }}
       >
-        <InfoOutlinedIcon sx={{ fontSize: 18 }} />
+        <InfoOutlinedIcon sx={{ fontSize: 18, color: (infoFlag ? '#29ce10ff' : 'inherit')}} />
       </IconButton>
 
       <IconButton 
