@@ -1,7 +1,10 @@
-# Calc Tools for Pokémon Sleep
+# Calc Tools for Pokémon Sleep (CaPlan)
 
-- [IV Calc](https://nitoyon.github.io/pokesleep-tool/iv/)
-- [Research Calc](https://nitoyon.github.io/pokesleep-tool/)
+自分が使いやすいようにパーティー編成画面の追加  
+オリジナルはnitoyon氏の個体値計算機を使用している  
+外部公開予定なし
+
+fork: [https://github.com/nitoyon/pokesleep-tool](https://github.com/nitoyon/pokesleep-tool)
 
 Feel free to [contribute](CONTRIBUTING.md)!
 

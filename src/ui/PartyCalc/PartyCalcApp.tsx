@@ -68,15 +68,14 @@ export default function PartyCalcApp() {
       const newParam = action.payload.parameter;
       setParams(newParam);
       localStorage.setItem('PstStrenghParam', JSON.stringify(newParam));
-    }
-    if (action.type === "openEnergyDialog") {
+    } else if (action.type === "openEnergyDialog") {
       setEnergyDialogOpen(true);
-    }
-    if (action.type === "closeEnergyDialog") {
+    } else if (action.type === "closeEnergyDialog") {
       setEnergyDialogOpen(false);
-    }
-    if (action.type === "changeLowerTab") {
+    } else if (action.type === "changeLowerTab") {
       setTabValue(1);
+    } else {
+      console.warn(`Unknown action type: ${action.type}`);
     }
   }, []);
 
