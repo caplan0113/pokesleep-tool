@@ -19,6 +19,8 @@ import StrengthBerryIngSkillView  from '../IvCalc/Strength/StrengthBerryIngSkill
 // import { useTranslation } from 'react-i18next';
 import PokemonBox from '../../util/PokemonBox';
 import BoxView from '../IvCalc/Box/BoxView';
+import StrengthParameterSummary from '../IvCalc/Strength/StrengthParameterSummary';
+import IvState from '../IvCalc/IvState';
 // import { b } from 'vitest/dist/chunks/suite.d.FvehnV49';
 
 const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
@@ -483,11 +485,13 @@ export default function PartyCalcApp() {
 
   const viewMemberIV = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].iv : defaultIV;
   const viewMemberParam = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].param : params;
+  const pseudoState = {
+    parameter: params,
+  } as unknown as IvState;
   
   return (
-    <Box sx={{ p: 2, pb: 15 }}>
-      {/* 5. パーティ切り替えUIの追加 */}
-      
+    <div>
+    <Box sx={{ p: 2, pb: 1 }}>
       {strengthTabValue === 0 ?(
         <TeamSummary teamData={teamData} />
         ) : (
@@ -496,8 +500,8 @@ export default function PartyCalcApp() {
           </Paper>
         )
       }
-      <Box sx={{zIndex: 10, position: 'sticky', top: 0, bgcolor: '#fdfdfd', pt: 1, pb: 1, mt: 2, borderBottom: '1px solid #ddd'}}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2, mt: 4}}>
+      <Box sx={{zIndex: 10, position: 'sticky', top: 0, bgcolor: '#fdfdfd', pt: 1, pb: 1, mt: 1, borderBottom: '1px solid #ddd'}}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1}}>
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成 {currentTeamIndex + 1}
             <IconButton 
               size="small" 
@@ -524,12 +528,16 @@ export default function PartyCalcApp() {
           <Button size="small" variant="text" color="error" onClick={handleClearAll}>このセットを解除</Button>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 1, mb: 3 }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           {teamData.map((data, idx) => (
             <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
               <PartyMemberSlot member={data} onRemove={() => handleRemoveMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} infoFlag={idx === teamItemViewIdx} />
             </Box>
           ))}
+        </Box>
+
+        <Box sx={{ px: 1}}>
+          <StrengthParameterSummary state={pseudoState} dispatch={dispatch} />
         </Box>
       </Box>
       
@@ -541,13 +549,12 @@ export default function PartyCalcApp() {
           <Tab label="計算条件設定" />
         </Tabs>
       </Box>
+      </Box>
 
-      {(tabValue === 0) ? (
-      <div>
-          <BoxView items={box.items} iv={defaultIV} selectedId={selectedId} dispatch={dispatch} parameter={params} />
+      <div style={{display: tabValue === 0 ? 'block' : 'none'}}>
+        <BoxView items={box.items} iv={defaultIV} selectedId={selectedId} dispatch={dispatch} parameter={params} />
       </div>
-      ) : (
-      <div style={{ contentVisibility: 'auto'}}>
+      <div style={{ contentVisibility: 'auto' , display: tabValue === 1 ? 'block' : 'none' }}>
         <Box sx={{ bgcolor: '#fff', p: 1, borderRadius: 2 }}>
           <StrengthParameterForm 
             dispatch={dispatch} 
@@ -564,13 +571,13 @@ export default function PartyCalcApp() {
           />
         </Box>
       </div>
-      )}
+
       <BoxItemDialog
         // key={"dlg" + (new Date()).getTime().toString()}
         open={boxItemDialogOpen} boxItem={editBoxItem}
         isEdit={isEditBoxItem}
         onClose={onBoxItemDialogClose} onChange={onBoxItemDialogChange}
       />
-    </Box>
+    </div>
   );
 }
