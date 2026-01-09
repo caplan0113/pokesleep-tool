@@ -40,26 +40,26 @@ import i18n from './i18n';
     );
 
     // emulate AdSense banner
-    if (window.location.hostname !== "nitoyon.github.io") {
-        document.body.style.padding = '30px 0px 0px';
-        const ins = document.createElement('ins');
-        ins.style.display = 'block';
-        ins.style.width = '100%';
-        ins.style.height = '30px';
-        ins.style.clear = 'none';
-        ins.style.float = 'none';
-        ins.style.top = '0px';
-        ins.style.bottom = 'auto';
-        ins.style.left = '0px';
-        ins.style.right = '0px';
-        ins.style.margin = '0px';
-        ins.style.padding = '0px';
-        ins.style.position = 'fixed';
-        ins.style.verticalAlign = 'baseline';
-        ins.style.zIndex = '2147483647';
-        ins.style.background = '#cccccc';
-        document.body.appendChild(ins);
-    }
+    // if (window.location.hostname !== "nitoyon.github.io") {
+    //     document.body.style.padding = '30px 0px 0px';
+    //     const ins = document.createElement('ins');
+    //     ins.style.display = 'block';
+    //     ins.style.width = '100%';
+    //     ins.style.height = '30px';
+    //     ins.style.clear = 'none';
+    //     ins.style.float = 'none';
+    //     ins.style.top = '0px';
+    //     ins.style.bottom = 'auto';
+    //     ins.style.left = '0px';
+    //     ins.style.right = '0px';
+    //     ins.style.margin = '0px';
+    //     ins.style.padding = '0px';
+    //     ins.style.position = 'fixed';
+    //     ins.style.verticalAlign = 'baseline';
+    //     ins.style.zIndex = '2147483647';
+    //     ins.style.background = '#cccccc';
+    //     document.body.appendChild(ins);
+    // }
 
     // window.addEventListener('load', () => {
     //     if ('serviceWorker' in navigator) {

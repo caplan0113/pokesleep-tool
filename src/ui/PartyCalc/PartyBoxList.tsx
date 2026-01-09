@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState, memo } from 'react';
 import { Box, ButtonBase, Typography } from '@mui/material';
 import { styled } from '@mui/system';
 import PokemonBox from '../../util/PokemonBox';
@@ -19,12 +19,11 @@ import IvState, { IvAction } from '../IvCalc/IvState';
 
 interface PartyBoxListProps {
   box: PokemonBox;
-  onSelect: (serial: string) => void;
   parameter: StrengthParameter;
   dispatch: React.Dispatch<IvAction>;
 }
 
-export default function PartyBoxList({ box, onSelect, parameter, dispatch }: PartyBoxListProps) {
+const PartyBoxList = memo(({ box, parameter, dispatch }: PartyBoxListProps) => {
   const { t } = useTranslation();
   const evolved = parameter?.evolved ?? true;
 
@@ -73,7 +72,7 @@ export default function PartyBoxList({ box, onSelect, parameter, dispatch }: Par
         {sortedItems.map((item) => (
           <StyledBoxItem 
             key={item.id} 
-            onClick={() => onSelect(`${item.serialize()}`)}
+            onClick={() => dispatch({type: "select", payload: {id: item.id}})}
           >
             <header><span className="lv">Lv.</span>{item.iv.level}</header>
             <PokemonIcon idForm={item.iv.idForm} size={30} />
@@ -99,7 +98,7 @@ export default function PartyBoxList({ box, onSelect, parameter, dispatch }: Par
       />
     </Box>
   );
-}
+});
 
 const StyledBoxItem = styled(ButtonBase)({
   display: 'flex', 
@@ -114,3 +113,5 @@ const StyledBoxItem = styled(ButtonBase)({
   '& header': { fontSize: '0.7rem', fontWeight: 'bold', '& .lv': { color: '#62d540' } },
   '& footer': { fontSize: '0.6rem', color: '#666', width: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
 });
+
+export default PartyBoxList;

@@ -8,39 +8,43 @@ import PokemonIv from '../../util/PokemonIv';
 import IngredientIcon from '../IvCalc/IngredientIcon';
 import { IngredientName } from '../../data/pokemons';
 import { StrengthParameter } from '../../util/PokemonStrength';
+import { useMemo, memo } from 'react';
 
 interface TeamSummaryProps {
   teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number; skillIngTotal: Record<string, number> | null; param: StrengthParameter; editFlag: boolean} | null)[];
 }
 
-export default function TeamSummary({ teamData }: TeamSummaryProps) {
+const TeamSummary = memo(({ teamData }: TeamSummaryProps) => {
   const { t } = useTranslation();
 
-  const totals = teamData.reduce((acc, data) => {
-    if (!data) return acc;
-    acc.total += data.result.totalStrength;
-    acc.berry += data.result.berryTotalStrength;
-    acc.ingredientEnergy += data.result.ingStrength;
-    acc.skill += data.skillStrength;
+  const totals = useMemo(() => {
+    return teamData.reduce((acc, data) => {
+      if (!data) return acc;
+      acc.total += data.result.totalStrength;
+      acc.berry += data.result.berryTotalStrength;
+      acc.ingredientEnergy += data.result.ingStrength;
+      acc.skill += data.skillStrength;
 
-    data.result.ingredients.forEach((ing) => {
-      if (ing.name !== "unknown") {
-        acc.ingCounts[ing.name] = (acc.ingCounts[ing.name] || 0) + ing.count;
-      }
-    });
-
-    if (data.skillIngTotal != null) {
-      Object.entries(data.skillIngTotal).forEach(([name, count]) => {
-        acc.ingCounts[name as IngredientName] = (acc.ingCounts[name as IngredientName] || 0) + count;
+      data.result.ingredients.forEach((ing) => {
+        if (ing.name !== "unknown") {
+          acc.ingCounts[ing.name] = (acc.ingCounts[ing.name] || 0) + ing.count;
+        }
       });
-    }
-    
-    return acc;
-  }, { total: 0, berry: 0, ingredientEnergy: 0, skill: 0, ingCounts: {} as Record<IngredientName, number> });
 
-  const sortedIngredients = (Object.entries(totals.ingCounts) as [IngredientName, number][])
-    .filter(([, count]) => count > 0)
-    .sort(([, a], [, b]) => b - a);
+      if (data.skillIngTotal != null) {
+        Object.entries(data.skillIngTotal).forEach(([name, count]) => {
+          acc.ingCounts[name as IngredientName] = (acc.ingCounts[name as IngredientName] || 0) + count;
+        });
+      }
+      return acc;
+    }, { total: 0, berry: 0, ingredientEnergy: 0, skill: 0, ingCounts: {} as Record<IngredientName, number> });
+  }, [teamData]);
+
+  const sortedIngredients = useMemo(() => {
+    return (Object.entries(totals.ingCounts) as [IngredientName, number][])
+      .filter(([, count]) => count > 0)
+      .sort(([, a], [, b]) => b - a);
+  }, [totals.ingCounts]);
 
   return (
     <Paper sx={{ p: 2, bgcolor: '#fdfdfd', borderRadius: 2 }}>
@@ -101,4 +105,6 @@ export default function TeamSummary({ teamData }: TeamSummaryProps) {
       </Box>
     </Paper>
   );
-}
+});
+
+export default TeamSummary;

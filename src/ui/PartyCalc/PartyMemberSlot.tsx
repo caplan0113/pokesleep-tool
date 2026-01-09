@@ -11,6 +11,7 @@ import IngredientIcon from '../IvCalc/IngredientIcon';
 import { formatWithComma } from '../../util/NumberUtil';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ReplayIcon from '@mui/icons-material/Replay';
+import { memo } from 'react';
 
 interface PartyMemberSlotProps {
   member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null , param: StrengthParameter, editFlag: boolean, isReplayhed: boolean} | null;
@@ -21,7 +22,7 @@ interface PartyMemberSlotProps {
   infoFlag: boolean;
 }
 
-export default function PartyMemberSlot({ member, onRemove, onEdit, onView, onReplay, infoFlag }: PartyMemberSlotProps) {
+const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, infoFlag }: PartyMemberSlotProps) => {
   // エラー回避のため、使用していない場合は取得しないか、削除します
   // const { t } = useTranslation(); 
 
@@ -154,4 +155,6 @@ export default function PartyMemberSlot({ member, onRemove, onEdit, onView, onRe
       </Box>
     </Paper>
   );
-}
+});
+
+export default PartyMemberSlot;
