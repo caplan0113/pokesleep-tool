@@ -67,7 +67,7 @@ export default function App({config}: {config:AppConfig}) {
         <AppConfigContext.Provider value={appConfig}>
             <ToolBar app={curApp} onAppChange={onAppChange}
                 onAppConfigChange={onAppConfigChange}/>
-            <NewsInfo appType={curApp} onAppConfigChange={onAppConfigChange}/>
+            <NewsInfo appType={curApp === "PartyCalc" ? "IvCalc" : curApp} onAppConfigChange={onAppConfigChange}/>
             {curApp === "ResearchCalc" && <ResearchCalcApp/>}
             {curApp === "IvCalc" && <IvCalcApp/>}
             {curApp === "PartyCalc" && <PartyCalcApp/>}
