@@ -14,7 +14,7 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import { memo } from 'react';
 
 interface PartyMemberSlotProps {
-  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null , param: StrengthParameter, editFlag: boolean, isReplayhed: boolean} | null;
+  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null , param: StrengthParameter, editFlag: boolean, isReplayhed: boolean, isEvoluved: boolean} | null;
   onRemove: () => void;
   onEdit: () => void;
   onView: () => void;
@@ -45,7 +45,7 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, info
     );
   }
 
-  const { iv, nickname, result, skillStrength, param, editFlag, isReplayhed } = member;
+  const { iv, nickname, result, skillStrength, param, editFlag, isReplayhed, isEvoluved } = member;
 
   return (
     <Paper 
@@ -107,7 +107,7 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, info
           textAlign: 'center' 
         }}
       >
-        {nickname}
+        {nickname + (isEvoluved ? " ★" : "")}
       </Typography>
 
       <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', mt: -0.5 }}>

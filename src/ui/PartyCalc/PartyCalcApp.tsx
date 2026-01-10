@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { Box, Tabs, Tab, Typography, Button, Paper } from '@mui/material';
 import PokemonIv from '../../util/PokemonIv';
-import PokemonStrength, { createStrengthParameter, loadStrengthParameter, StrengthParameter } from '../../util/PokemonStrength';
+import PokemonStrength, { createStrengthParameter, loadStrengthParameter, StrengthParameter} from '../../util/PokemonStrength';
 import PartyMemberSlot from './PartyMemberSlot';
 import TeamSummary from './TeamSummary';
 // import PartyBoxList from './PartyBoxList';
@@ -21,6 +21,7 @@ import PokemonBox from '../../util/PokemonBox';
 import BoxView from '../IvCalc/Box/BoxView';
 import StrengthParameterSummary from '../IvCalc/Strength/StrengthParameterSummary';
 import IvState from '../IvCalc/IvState';
+// import { C } from 'vitest/dist/chunks/reporters.d.BFLkQcL6';
 // import { b } from 'vitest/dist/chunks/suite.d.FvehnV49';
 
 const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
@@ -47,22 +48,37 @@ export default function PartyCalcApp() {
   React.useEffect(() => {
     currentIndexRef.current = currentTeamIndex;
   }, [currentTeamIndex]);
+  const deferredTeamIndex = React.useDeferredValue(currentTeamIndex);
+
+  const [teamItemEditIdx, setTeamItemEditIdx] = useState<number | null>(null);
+  const teamItemEditIdxRef = React.useRef(teamItemEditIdx);
+  React.useEffect(() => {
+    teamItemEditIdxRef.current = teamItemEditIdx;
+  }, [teamItemEditIdx]);
+
+  const [selectedId, setSelectedId] = useState<number>(() => {
+    return -1;
+  });
+  const selectedIdRef = React.useRef(selectedId);
+  React.useEffect(() => {
+    selectedIdRef.current = selectedId;
+  }, [selectedId]);
 
   // 現在のパーティを取得
   
   const [params, setParams] = useState<StrengthParameter>(() => loadStrengthParameter());
-  const [selectedId, setSelectedId] = useState<number>(() => {
-    return -1;
-  });
+  
   const [tabValue, setTabValue] = useState(0);
   const [energyDialogOpen, setEnergyDialogOpen] = useState(false);
   const [boxItemDialogOpen, setBoxItemDialogOpen] = useState(false);
-  const [teamItemEditIdx, setTeamItemEditIdx] = useState<number | null>(null);
-  const deferredTeamIndex = React.useDeferredValue(currentTeamIndex);
+  
+  
   const [strengthTabValue, setStrengthTabValue] = useState(0);
   const [teamItemViewIdx, setTeamItemViewIdx] = useState<number | null>(null);
   const [isEditBoxItem, setIsEditBoxItem] = useState<boolean>(false);
   const [editBoxItem, setEditBoxItem] = useState<PokemonBoxItem | null>(null);
+  const [editBoxItemFlag, setEditBoxItemFlag] = useState<boolean>(false);
+  const [boxIv, setBoxIv] = useState<PokemonIv>(defaultIV);
 
 
   const box = useMemo(() => {
@@ -113,29 +129,92 @@ export default function PartyCalcApp() {
     } else if (action.type === "changeLowerTab") {
       setTabValue(1);
     } else if (action.type === "select") {
-      const fullSerial = box.getById(action.payload.id)?.serialize() || "";
+      const id = action.payload.id;
+      const fullSerial = box.getById(id)?.serialize() || "";
       if (!fullSerial) return;
 
-      setAllTeams(prevAllTeams => {
-        const currentTeamIndex = currentIndexRef.current;
-        const newAllTeams = [...prevAllTeams];
-        const currentTeam = [...newAllTeams[currentTeamIndex]];
-        const emptyIndex = currentTeam.findIndex(s => !s);
-        
-        if (emptyIndex !== -1) {
-          currentTeam[emptyIndex] = fullSerial;
-          newAllTeams[currentTeamIndex] = currentTeam;
-          localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
-          return newAllTeams;
-        }
-        return prevAllTeams;
-      });
-      setSelectedId(action.payload.id);
+      const selectIv = box.getById(id)?.iv;
+      setBoxIv(selectIv || defaultIV);
+
+      const selectedId = selectedIdRef.current;
+      if (selectedId === id) {
+        setAllTeams(prevAllTeams => {
+          const currentTeamIndex = currentIndexRef.current;
+          const newAllTeams = [...prevAllTeams];
+          const currentTeam = [...newAllTeams[currentTeamIndex]];
+          const emptyIndex = currentTeam.findIndex(s => !s);
+          
+          if (emptyIndex !== -1) {
+            currentTeam[emptyIndex] = fullSerial;
+            newAllTeams[currentTeamIndex] = currentTeam;
+            localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
+            return newAllTeams;
+          }
+          return prevAllTeams;
+        });
+      } else {
+        setSelectedId(id);
+      } 
+    } else if (action.type === "updateIv") {
+      const iv = action.payload.iv;
+      setBoxIv(iv);
     } else if (action.type === "edit") {
       setIsEditBoxItem(true);
       setBoxItemDialogOpen(true);
       setSelectedId(action.payload.id);
       setEditBoxItem(box.getById(action.payload.id));
+    } else if (action.type === "dup") {
+      const originalBoxItem = box.getById(action.payload.id);
+      if (originalBoxItem === null || !box.canAdd) return;
+
+      const addId = box.add(originalBoxItem.iv, originalBoxItem.nickname);
+      box.save();
+      setSelectedId(addId);
+    } else if (action.type === "remove") {
+      if (window.confirm('ボックスから選択中のポケモンを削除しますか？')) {
+        box.remove(action.payload.id);
+        box.save();
+      }
+      setSelectedId(-1);
+    } else if (action.type === "editDialogClose") {
+      setBoxItemDialogOpen(false);
+    } else if (action.type === "addOrEditDone") {
+      const value = action.payload.item;
+      if (!value) return;
+
+      const currentTeamIndex = currentIndexRef.current;
+      const teamItemEditIdx = teamItemEditIdxRef.current;
+
+      if (value.id === -1) {
+        if (teamItemEditIdx !== null) {
+          const fullSerial = `${value.iv.serialize()}@${value.nickname || ""}`;
+          
+          setAllTeams(prevAllTeams => {
+            const newAllTeams = [...prevAllTeams];
+            newAllTeams[currentTeamIndex][teamItemEditIdx] = fullSerial;
+            localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
+            return newAllTeams;
+          });
+        } else {
+          box.add(value.iv, value.nickname);
+          box.save();
+        }
+      } else {
+        setEditBoxItemFlag(true);
+        // 既存のボックスアイテムを編集した場合は、IDで探して更新
+        const originalBoxItem = box.getById(value.id);
+        if (!originalBoxItem) return;
+        box.set(value.id, value.iv, value.nickname);
+        box.save();
+      }
+      setTeamItemEditIdx(null);
+    } else if (action.type === "add") {
+      if (!box.canAdd) {
+        alert("ボックスの上限に達しています。");
+        return;
+      }
+      setIsEditBoxItem(false);
+      setBoxItemDialogOpen(true);
     } else {
       console.warn(`Unknown action type: ${action.type}`);
     }
@@ -143,6 +222,10 @@ export default function PartyCalcApp() {
 
   const defaultResult = new PokemonStrength(defaultIV, params).calculate();
   const teamData = useMemo(() => {
+    if (editBoxItemFlag) {
+      setEditBoxItemFlag(false);
+    }
+
     const teamSerials = allTeams[deferredTeamIndex];
 
     // --- 1. メンバーの復元（デシリアライズは1回だけ） ---
@@ -258,6 +341,8 @@ export default function PartyCalcApp() {
       const editFlag = !originalBoxItem || !originalBoxItem.iv.isEqual(iv);
       const isReplayhed = !!originalBoxItem && !originalBoxItem.iv.isEqual(iv);
 
+      const isEvoluved = params.evolved && !m.iv.pokemon.isFullyEvolved;
+
       return {
         iv,
         nickname: nickname || iv.pokemonName,
@@ -266,160 +351,15 @@ export default function PartyCalcApp() {
         skillIngTotal,
         param: currentCalcParams,
         editFlag,
-        isReplayhed
+        isReplayhed,
+        isEvoluved
       };
     });
-  }, [allTeams, deferredTeamIndex, params, box]);
-  // const teamData = useMemo(() => {
-  //   const teamSerials = allTeams[currentTeamIndex];
-
-  //   // 1. 全メンバーを復元（ニックネーム分離）
-  //   const members = teamSerials.map(s => {
-  //     if (!s) return null;
-  //     try {
-  //       const [serial, nickname] = s.split('@');
-  //       const iv = PokemonIv.deserialize(serial);
-  //       return { iv, nickname };
-  //     } catch {
-  //       return null;
-  //     }
-  //   });
-
-  //   // 2. パーティ内の合計HB数を算出
-  //   const totalHbCount = members.filter(m => m?.iv.hasHelpingBonusInActiveSubSkills).length;
-  //   const teamTypeAndLevel = members.map(m => {
-  //     if (!m) return defaultIV;
-  //     return m.iv;
-  //   });
-
-  //   const teamSpecies: Record<PokemonType, Set<string>> = members.reduce((acc, m) => {
-  //     if (!m) return acc;
-  //     const name = m.iv.pokemon.name;
-  //     const type = m.iv.pokemon.type;
-  //     if (!acc[type]) acc[type] = new Set<string>();
-  //     acc[type].add(name);
-  //     return acc;
-  //   }, {} as Record<PokemonType, Set<string>>);
-
-  //   const strengthPerHelpCalcParams = createStrengthParameter({
-  //     ...params,
-  //     addHelpingBonusEffect: false,
-  //     totalFlags: [true, false, true], // 食材無効
-  //     period: -1
-  //   });
-  //   const teamStrengthPerHelp = members.reduce((acc, m) => {
-  //     if (!m) return acc;
-  //     const pokeStrength = new PokemonStrength(m.iv, strengthPerHelpCalcParams).calculate();
-  //     acc.push({berry: pokeStrength.berryTotalStrength, ing: pokeStrength.ingredients});
-  //     return acc;
-  //   }, [] as {berry: number; ing: {name: IngredientName; count: number}[]}[]);
-
-  //   const teamStrengthPerHelpBerryTotal: number = teamStrengthPerHelp.reduce((acc, val) => {
-  //     return acc + val.berry;
-  //   }, 0);
-
-  //   // const teamStrengthPerHelpIngTotal: Record<IngredientName, number> = teamStrengthPerHelp.reduce((acc, val) => {
-  //   //   val.ing.forEach(ing => {
-  //   //     if (ing.name === "unknown") return;
-  //   //     acc[ing.name] = (acc[ing.name] || 0) + ing.count;
-  //   //   });
-  //   //   return acc;
-  //   // }, {} as Record<IngredientName, number>);
-
-  //   // 3. 各スロットの個別計算（idx を削除して ESLint エラーを回避）
-  //   return members.map((m) => {
-  //     if (!m) return null;
-  //     const { iv, nickname} = m;
-      
-  //     const isOwnerHB = iv.hasHelpingBonusInActiveSubSkills;
-  //     const applicableHbCount = isOwnerHB ? Math.max(0, totalHbCount - 1) : totalHbCount;
-
-  //     const berryBurstTeam = teamTypeAndLevel.filter(mm => m.iv != mm).map(mm => ({
-  //       type: mm.pokemon.type,
-  //       level: params.level === 0 ? mm.level : params.level
-  //     }));
-
-  //     const currentCalcParams = createStrengthParameter({
-  //       ...params,
-  //       addHelpingBonusEffect: false,
-  //       helpBonusCount: Math.min(applicableHbCount, 4) as 0 | 1 | 2 | 3 | 4,
-  //       totalFlags: [true, false, true], // 食材無効
-  //       berryBurstTeam: {
-  //         auto: false,
-  //         members: berryBurstTeam,
-  //         species: Math.max(teamSpecies[iv.pokemon.type].size, 1)
-  //       }
-  //     });
-
-  //     const pokeStrength = new PokemonStrength(iv, currentCalcParams)
-  //     const pokeStrengthCal = pokeStrength.calculate();
-  //     let skillStrength = 0;
-  //     let skillIngTotal;
-  //     if (iv.pokemon.skill.includes("Ingredient Magnet S") ||
-  //         iv.pokemon.skill.includes("Cooking Power-Up S") ||
-  //         iv.pokemon.skill.includes("Ingredient Draw S")
-  //     ){
-  //       skillStrength = 0;
-  //       skillIngTotal = null;
-  //     } else if (iv.pokemon.skill.includes("Helper Boost")) {
-  //       const skillBaseValue = getSkillValue("Helper Boost", pokeStrength.getSkillLevel(), Math.max(teamSpecies[iv.pokemon.type].size, 1));
-  //       skillStrength = skillBaseValue * pokeStrengthCal.skillCount * teamStrengthPerHelpBerryTotal;
-  //       skillIngTotal = teamStrengthPerHelp.reduce((acc, val) => {
-  //         val.ing.forEach(ing => {
-  //           if (ing.name === "unknown") return;
-  //           acc[ing.name] = (acc[ing.name] || 0) + (ing.count * skillBaseValue * pokeStrengthCal.skillCount);
-  //         });
-  //         return acc;
-  //       }, {} as Record<IngredientName, number>);
-
-  //       // console.log("Helper Boost skillStrength:", skillStrength, skillBaseValue, pokeStrengthCal.skillCount, teamStrengthPerHelpBerryTotal, skillIngTotal);
-  //     } else if (iv.pokemon.skill.includes("Extra Helpful S")) {
-  //       skillStrength = pokeStrengthCal.skillValue * teamStrengthPerHelpBerryTotal / teamStrengthPerHelp.length;
-  //       skillIngTotal = teamStrengthPerHelp.reduce((acc, val) => {
-  //         val.ing.forEach(ing => {
-  //           if (ing.name === "unknown") return;
-  //           acc[ing.name] = (acc[ing.name] || 0) + (ing.count * pokeStrengthCal.skillValue / teamStrengthPerHelp.length);
-  //         });
-  //         return acc;
-  //       }, {} as Record<IngredientName, number>);
-
-  //       // console.log("Extra Helpful S skillStrength:", skillStrength, pokeStrengthCal.skillValue, teamStrengthPerHelpBerryTotal, teamStrengthPerHelp.length, skillIngTotal);
-  //     } else {
-  //       skillStrength = pokeStrengthCal.skillStrength + pokeStrengthCal.skillStrength2;
-  //       skillIngTotal = null;
-  //     }
-
-  //     let editFlag = true;
-  //     let isReplayhed = false;
-  //     box.items.forEach(item => {
-  //       if (item.nickname === nickname && item.iv.isEqual(iv)) {
-  //         editFlag = false;
-  //       }
-  //       if (item.nickname === nickname && item.iv.pokemonName === iv.pokemonName && !item.iv.isEqual(iv)) {
-  //         isReplayhed = true;
-  //       }
-  //     });
-      
-  //     try {
-  //       return { 
-  //         iv, 
-  //         nickname: nickname || iv.pokemonName,
-  //         result: pokeStrengthCal,
-  //         skillStrength: skillStrength,
-  //         skillIngTotal: skillIngTotal,
-  //         param: currentCalcParams,
-  //         editFlag: editFlag,
-  //         isReplayhed: isReplayhed
-  //       };
-  //     } catch {
-  //       return null;
-  //     }
-  //   });
-  // }, [allTeams, currentTeamIndex, params, box]);
+  }, [allTeams, deferredTeamIndex, params, box, editBoxItemFlag]);
 
   // handleSelectFromBox などの更新
 
-  const handleRemoveMember = useCallback((idx: number) => {
+  const handleRemoveTeamMember = useCallback((idx: number) => {
     const newAllTeams = [...allTeams];
     const currentTeam = [...newAllTeams[currentTeamIndex]];
     currentTeam[idx] = null;
@@ -447,27 +387,13 @@ export default function PartyCalcApp() {
     setStrengthTabValue(1);
   }, []);
 
-  const onBoxItemDialogClose = useCallback(() => {
-    setBoxItemDialogOpen(false);
-  }, []);
+  const onBoxItemEditDialogClose = useCallback(() => {
+    dispatch({ type: "editDialogClose"});
+  }, [dispatch]);
 
   const onBoxItemDialogChange = useCallback((value: PokemonBoxItem) => {
-    if (!value) return;
-    const currentTeamIndex = currentIndexRef.current;
-    if (value.id === -1 && teamItemEditIdx !== null) {
-      const fullSerial = `${value.iv.serialize()}@${value.nickname || ""}`;
-      allTeams[currentTeamIndex][teamItemEditIdx] = fullSerial;
-      const newAllTeams = [...allTeams];
-      saveTeams(newAllTeams);
-    } else {
-      // 既存のボックスアイテムを編集した場合は、IDで探して更新
-      const originalBoxItem = box.getById(value.id);
-      if (!originalBoxItem) return;
-      box.set(value.id, value.iv, value.nickname);
-      box.save();
-    }
-    setTeamItemEditIdx(null);
-  }, [allTeams, teamItemEditIdx, box]);
+    dispatch({ type: "addOrEditDone", payload: { item: value }});    
+  }, [dispatch]);
 
   const handleReplayMember = useCallback((idx: number) => {
     if (teamData[idx] === null) return;
@@ -531,7 +457,7 @@ export default function PartyCalcApp() {
         <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
           {teamData.map((data, idx) => (
             <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
-              <PartyMemberSlot member={data} onRemove={() => handleRemoveMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} infoFlag={idx === teamItemViewIdx} />
+              <PartyMemberSlot member={data} onRemove={() => handleRemoveTeamMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} infoFlag={idx === teamItemViewIdx} />
             </Box>
           ))}
         </Box>
@@ -552,7 +478,7 @@ export default function PartyCalcApp() {
       </Box>
 
       <div style={{display: tabValue === 0 ? 'block' : 'none'}}>
-        <BoxView items={box.items} iv={defaultIV} selectedId={selectedId} dispatch={dispatch} parameter={params} />
+        <BoxView items={box.items} iv={boxIv} selectedId={selectedId} dispatch={dispatch} parameter={params} />
       </div>
       <div style={{ contentVisibility: 'auto' , display: tabValue === 1 ? 'block' : 'none' }}>
         <Box sx={{ bgcolor: '#fff', p: 1, borderRadius: 2 }}>
@@ -576,7 +502,7 @@ export default function PartyCalcApp() {
         // key={"dlg" + (new Date()).getTime().toString()}
         open={boxItemDialogOpen} boxItem={editBoxItem}
         isEdit={isEditBoxItem}
-        onClose={onBoxItemDialogClose} onChange={onBoxItemDialogChange}
+        onClose={onBoxItemEditDialogClose} onChange={onBoxItemDialogChange}
       />
     </div>
   );

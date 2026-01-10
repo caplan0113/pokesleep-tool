@@ -11,7 +11,7 @@ import { StrengthParameter } from '../../util/PokemonStrength';
 import { useMemo, memo } from 'react';
 
 interface TeamSummaryProps {
-  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number; skillIngTotal: Record<string, number> | null; param: StrengthParameter; editFlag: boolean} | null)[];
+  teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number; skillIngTotal: Record<string, number> | null; param: StrengthParameter; editFlag: boolean; isEvoluved: boolean} | null)[];
 }
 
 const TeamSummary = memo(({ teamData }: TeamSummaryProps) => {
