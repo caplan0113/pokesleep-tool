@@ -15,6 +15,10 @@
             "notice detail1": "用來確認将来的 SP 和能量、有助於制定養成計劃！",
             "notice detail2": "此外，我們在 <YouTube>YouTube 頻道</YouTube> 上發佈了使用方法的講解影片。請務必觀看。",
             "news": {
+                "clodsire bug": {
+                    "headline": "$t(pokemons.Clodsire)可能從[$t(box)]中逃走了，請您確認。",
+                    "detail": "如果您在1月7日至9日期間首次打開工具，盒子中的$t(pokemons.Clodsire)資料可能已消失。對此造成的不便深表歉意。"
+                },
                 "candy movie": {
                     "headline": "<a href='https://youtu.be/-1I4s8jwiUs'>糖果計算功能的使用方法影片</a>已發佈。",
                     "detail": "$t(movie detail)"
@@ -621,7 +625,7 @@
         "strength skill info": {
             "Ingredient Magnet S": "通過技能獲取的食材假定作為剩餘食材進行計算。",
             "Ingredient Magnet S (Plus)": "$t(strength skill info.Ingredient Magnet S)不會考慮隊伍中是否有除了自己以外擁有「正電」或「負電」特性的寶可夢。",
-            "Ingredient Magnet S (Present)": "$t(strength skill info.Ingredient Magnet S)根據 RaenonX 的彙總數據計算，獲取 $t(candy) 的機率為 33.4%。",
+            "Ingredient Magnet S (Present)": "$t(strength skill info.Ingredient Magnet S)根據 RaenonX 的彙總數據計算，獲取 $t(candy) 的機率為 34.4%。",
             "Charge Energy S": "技能的效果沒有換算成合計能量值。如需估計對能量的影響，請嘗試變更 [$t(energy)] 的值並進行確認。",
             "Charge Energy S (Moonlight)": "$t(strength skill info.Charge Energy S)",
             "Charge Strength S": "",
