@@ -513,6 +513,10 @@ export default function PartyCalcApp() {
     newAllTeams[currentTeamIndex] = currentTeam;
     saveTeams(newAllTeams);
     setStrengthTabValue(0);
+    setTeamItemViewIdx(prevIdx => {
+      if (prevIdx === idx) return null;
+      return prevIdx;
+    });
   }, [allTeams, currentTeamIndex]);
 
   const handleEditTeamMember = useCallback((idx: number) => {
