@@ -1,6 +1,6 @@
 import React from 'react';
 import { Paper, Box, Typography, Divider } from '@mui/material';
-import { StrengthResult } from '../../util/PokemonStrength';
+import PokemonStrength, { StrengthResult } from '../../util/PokemonStrength';
 import { formatWithComma } from '../../util/NumberUtil';
 import { useTranslation } from 'react-i18next';
 import LocalFireDepartmentIcon from '@mui/icons-material/LocalFireDepartment';
@@ -9,13 +9,21 @@ import IngredientIcon from '../IvCalc/IngredientIcon';
 import { IngredientName } from '../../data/pokemons';
 import { StrengthParameter } from '../../util/PokemonStrength';
 import { useMemo, memo } from 'react';
+import EnergyDialog from '../IvCalc/Strength/EnergyDialog';
+import { IvAction } from '../IvCalc/IvState';
 
 interface TeamSummaryProps {
   teamData: ({ iv: PokemonIv; nickname: string; result: StrengthResult; skillStrength: number; skillIngTotal: Record<string, number> | null; param: StrengthParameter; editFlag: boolean; isEvoluved: boolean} | null)[];
+  pokemonIv: PokemonIv,
+  settings: StrengthParameter,
+  energyDialogOpen: boolean,
+  dispatch: React.Dispatch<IvAction>,
 }
 
-const TeamSummary = memo(({ teamData }: TeamSummaryProps) => {
+const TeamSummary = memo(({ teamData, pokemonIv, settings, energyDialogOpen, dispatch }: TeamSummaryProps) => {
   const { t } = useTranslation();
+
+  const result = new PokemonStrength(pokemonIv, settings).calculate();
 
   const totals = useMemo(() => {
     return teamData.reduce((acc, data) => {
@@ -47,6 +55,7 @@ const TeamSummary = memo(({ teamData }: TeamSummaryProps) => {
   }, [totals.ingCounts]);
 
   return (
+    <>
     <Paper sx={{ p: 2, bgcolor: '#fdfdfd', borderRadius: 2 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
         <LocalFireDepartmentIcon sx={{ color: "#ff944b", mr: 1 }} />
@@ -104,6 +113,15 @@ const TeamSummary = memo(({ teamData }: TeamSummaryProps) => {
         ))}
       </Box>
     </Paper>
+    <EnergyDialog
+            open={energyDialogOpen}
+            iv={pokemonIv}
+            parameter={settings}
+            energy={result.energy}
+            onClose={() => dispatch({ type: "closeEnergyDialog" })}
+            dispatch={dispatch}
+          />
+    </>
   );
 });
 

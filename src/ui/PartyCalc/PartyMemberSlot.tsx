@@ -7,7 +7,7 @@ import { StrengthParameter, StrengthResult } from '../../util/PokemonStrength';
 import PokemonIv from '../../util/PokemonIv';
 import PokemonIcon from '../IvCalc/PokemonIcon';
 import IngredientIcon from '../IvCalc/IngredientIcon';
-// import { useTranslation } from 'react-i18next'; // インポートは残しておきます
+import { useTranslation } from 'react-i18next'; // インポートは残しておきます
 import { formatWithComma } from '../../util/NumberUtil';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ReplayIcon from '@mui/icons-material/Replay';
@@ -24,7 +24,7 @@ interface PartyMemberSlotProps {
 
 const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, infoFlag }: PartyMemberSlotProps) => {
   // エラー回避のため、使用していない場合は取得しないか、削除します
-  // const { t } = useTranslation(); 
+  const { t } = useTranslation(); 
 
   if (!member) {
     return (
@@ -46,6 +46,7 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, info
   }
 
   const { iv, nickname, result, skillStrength, param, editFlag, isReplayhed, isEvoluved } = member;
+  const nickname_ = (nickname || t(`pokemons.${iv.pokemonName}`)) + (isEvoluved ? " ★" : "");
 
   return (
     <Paper 
@@ -107,7 +108,7 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, info
           textAlign: 'center' 
         }}
       >
-        {nickname + (isEvoluved ? " ★" : "")}
+        {nickname_}
       </Typography>
 
       <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.6rem', mt: -0.5 }}>

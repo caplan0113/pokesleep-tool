@@ -1,33 +1,33 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { Box, Tabs, Tab, Typography, Button, Paper } from '@mui/material';
+import { Box, Typography, Button, Paper, Snackbar } from '@mui/material';
 import PokemonIv from '../../util/PokemonIv';
-import PokemonStrength, { createStrengthParameter, loadStrengthParameter, StrengthParameter} from '../../util/PokemonStrength';
+import PokemonStrength, { createStrengthParameter} from '../../util/PokemonStrength';
 import PartyMemberSlot from './PartyMemberSlot';
 import TeamSummary from './TeamSummary';
-// import PartyBoxList from './PartyBoxList';
 import { getInitialIvState, IvAction} from '../IvCalc/IvState';
 import StrengthParameterForm from '../IvCalc/Strength/StrengthParameterForm';
-import EnergyDialog from '../IvCalc/Strength/EnergyDialog';
-// import {PokemonType} from '../../data/pokemons';
-// import { IngredientName } from '../../data/pokemons';
+// import EnergyDialog from '../IvCalc/Strength/EnergyDialog';
 import { getSkillValue } from '../../util/MainSkill'
 import BoxItemDialog from '../IvCalc/Box/BoxItemDialog';
 import { PokemonBoxItem } from '../../util/PokemonBox';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { IconButton } from '@mui/material';
 import StrengthBerryIngSkillView  from '../IvCalc/Strength/StrengthBerryIngSkillView';
-// import { useTranslation } from 'react-i18next';
 import PokemonBox from '../../util/PokemonBox';
 import BoxView from '../IvCalc/Box/BoxView';
 import StrengthParameterSummary from '../IvCalc/Strength/StrengthParameterSummary';
 import IvState from '../IvCalc/IvState';
-// import { C } from 'vitest/dist/chunks/reporters.d.BFLkQcL6';
-// import { b } from 'vitest/dist/chunks/suite.d.FvehnV49';
+import LowerTabHeader from '../IvCalc/LowerTabHeader';
+import IvForm from '../IvCalc/IvForm/IvForm';
+import BoxExportDialog from '../IvCalc/Box/BoxExportDialog';
+import BoxImportDialog from '../IvCalc/Box/BoxImportDialog';
+import BoxDeleteAllDialog from '../IvCalc/Box/BoxDeleteAllDialog';
+import { useTranslation } from 'react-i18next';
 
 const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
 
 export default function PartyCalcApp() {
-  // const { t } = useTranslation();
+  const { t } = useTranslation();
   // 1. パーティ全体のデータを管理 (5セット分)
   const [allTeams, setAllTeams] = useState<(string | null)[][]>(() => {
     const saved = localStorage.getItem('PstPartySelectionGroups');
@@ -55,37 +55,39 @@ export default function PartyCalcApp() {
   React.useEffect(() => {
     teamItemEditIdxRef.current = teamItemEditIdx;
   }, [teamItemEditIdx]);
-
-  const [selectedId, setSelectedId] = useState<number>(() => {
-    return -1;
-  });
-  const selectedIdRef = React.useRef(selectedId);
-  React.useEffect(() => {
-    selectedIdRef.current = selectedId;
-  }, [selectedId]);
+  
 
   // 現在のパーティを取得
-  
-  const [params, setParams] = useState<StrengthParameter>(() => loadStrengthParameter());
-  
-  const [tabValue, setTabValue] = useState(0);
-  const [energyDialogOpen, setEnergyDialogOpen] = useState(false);
   const [boxItemDialogOpen, setBoxItemDialogOpen] = useState(false);
-  
-  
   const [strengthTabValue, setStrengthTabValue] = useState(0);
   const [teamItemViewIdx, setTeamItemViewIdx] = useState<number | null>(null);
   const [isEditBoxItem, setIsEditBoxItem] = useState<boolean>(false);
   const [editBoxItem, setEditBoxItem] = useState<PokemonBoxItem | null>(null);
   const [editBoxItemFlag, setEditBoxItemFlag] = useState<boolean>(false);
-  const [boxIv, setBoxIv] = useState<PokemonIv>(defaultIV);
+
+  const [state, setState] = useState<IvState>(() => ({
+    ...getInitialIvState(),
+    tabIndex: 1,
+  }));
+
+  function saveIvStateCache(state: IvState) {
+    const selectedItem = state.box.getById(state.selectedItemId);
+    const cache = {
+        tabIndex: state.tabIndex,
+        lowerTabIndex: state.lowerTabIndex,
+        iv: state.pokemonIv.serialize(),
+        selectedIv: selectedItem === null ? "" : selectedItem.iv.serialize(),
+    };
+    localStorage.setItem("PstIvState", JSON.stringify(cache));
+  }
+
+  const selectedIdRef = React.useRef(state.selectedItemId);
+  React.useEffect(() => {
+    selectedIdRef.current = state.selectedItemId;
+  }, [state.selectedItemId]);
 
 
-  const box = useMemo(() => {
-    const b = new PokemonBox();
-    b.load();
-    return b;
-}, []);
+  
 
   // 3. データを保存する共通関数
   const saveTeams = (newAllTeams: (string | null)[][]) => {
@@ -120,21 +122,45 @@ export default function PartyCalcApp() {
   const dispatch = useCallback((action: IvAction) => {
     if (action.type === "changeParameter") {
       const newParam = action.payload.parameter;
-      setParams(newParam);
+      setState(prevState => ({
+        ...prevState,
+        parameter: newParam,
+      }));
       localStorage.setItem('PstStrenghParam', JSON.stringify(newParam));
     } else if (action.type === "openEnergyDialog") {
-      setEnergyDialogOpen(true);
+      setState(prevState => ({
+        ...prevState,
+        energyDialogOpen: true,
+      }));
     } else if (action.type === "closeEnergyDialog") {
-      setEnergyDialogOpen(false);
+      setState(prevState => ({
+        ...prevState,
+        energyDialogOpen: false,
+      }));
     } else if (action.type === "changeLowerTab") {
-      setTabValue(1);
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          lowerTabIndex: action.payload.index,
+        };
+        saveIvStateCache(newState);
+        return newState;
+    });
+      
     } else if (action.type === "select") {
       const id = action.payload.id;
-      const fullSerial = box.getById(id)?.serialize() || "";
+      const fullSerial = state.box.getById(id)?.serialize() || "";
       if (!fullSerial) return;
 
-      const selectIv = box.getById(id)?.iv;
-      setBoxIv(selectIv || defaultIV);
+      const selectIv = state.box.getById(id)?.iv;
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          pokemonIv: selectIv || defaultIV,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
 
       const selectedId = selectedIdRef.current;
       if (selectedId === id) {
@@ -153,29 +179,63 @@ export default function PartyCalcApp() {
           return prevAllTeams;
         });
       } else {
-        setSelectedId(id);
+        setState(prevState => {
+          const newState = {
+            ...prevState,
+            selectedItemId: id,
+          };
+          saveIvStateCache(newState);
+          return newState;
+        });
       } 
     } else if (action.type === "updateIv") {
       const iv = action.payload.iv;
-      setBoxIv(iv);
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          pokemonIv: iv,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
     } else if (action.type === "edit") {
       setIsEditBoxItem(true);
       setBoxItemDialogOpen(true);
-      setSelectedId(action.payload.id);
-      setEditBoxItem(box.getById(action.payload.id));
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          selectedItemId: action.payload.id,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
+      setEditBoxItem(state.box.getById(action.payload.id));
     } else if (action.type === "dup") {
-      const originalBoxItem = box.getById(action.payload.id);
-      if (originalBoxItem === null || !box.canAdd) return;
-
-      const addId = box.add(originalBoxItem.iv, originalBoxItem.nickname);
-      box.save();
-      setSelectedId(addId);
+      const originalBoxItem = state.box.getById(action.payload.id);
+      if (originalBoxItem === null || !state.box.canAdd) return;
+      const addId = state.box.add(originalBoxItem.iv, originalBoxItem.nickname);
+      state.box.save();
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          selectedItemId: addId,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
     } else if (action.type === "remove") {
       if (window.confirm('ボックスから選択中のポケモンを削除しますか？')) {
-        box.remove(action.payload.id);
-        box.save();
+        state.box.remove(action.payload.id);
+        state.box.save();
       }
-      setSelectedId(-1);
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          selectedItemId: -1,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
     } else if (action.type === "editDialogClose") {
       setBoxItemDialogOpen(false);
     } else if (action.type === "addOrEditDone") {
@@ -196,31 +256,118 @@ export default function PartyCalcApp() {
             return newAllTeams;
           });
         } else {
-          box.add(value.iv, value.nickname);
-          box.save();
+          dispatch({type: "addThis", payload: value});
         }
       } else {
         setEditBoxItemFlag(true);
         // 既存のボックスアイテムを編集した場合は、IDで探して更新
-        const originalBoxItem = box.getById(value.id);
+        const originalBoxItem = state.box.getById(value.id);
         if (!originalBoxItem) return;
-        box.set(value.id, value.iv, value.nickname);
-        box.save();
+        state.box.set(value.id, value.iv, value.nickname);
+        state.box.save();
       }
       setTeamItemEditIdx(null);
     } else if (action.type === "add") {
-      if (!box.canAdd) {
+      if (!state.box.canAdd) {
         alert("ボックスの上限に達しています。");
         return;
       }
       setIsEditBoxItem(false);
       setBoxItemDialogOpen(true);
+    } else if (action.type === "addThis") {
+      if (!state.box.canAdd) {
+        alert("ボックスの上限に達しています。");
+        return;
+      }
+      const item = action.payload;
+      const addId = state.box.add(item.iv, item.nickname);
+      state.box.save();
+
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          selectedItemId: addId,
+          pokemonIv: item.iv,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
+    } else if (action.type === "export") {
+      setState(prevState => ({
+        ...prevState,
+        boxExportDialogOpen: true,
+      }));
+    } else if (action.type === "exportClose") {
+      setState(prevState => ({
+        ...prevState,
+        boxExportDialogOpen: false,
+      }));
+    } else if (action.type === "import") {
+      if (!state.box.canAdd) {
+        alert("ボックスの上限に達しています。");
+        return;
+      }
+      setState(prevState => ({
+        ...prevState,
+        boxImportDialogOpen: true,
+      }));
+    } else if (action.type === "importClose") {
+      const box = new PokemonBox(state.box.items);
+      setState(prevState => ({
+        ...prevState,
+        box: box,
+        boxImportDialogOpen: false,
+      }));
+    } else if (action.type === "deleteAll") {
+      setState(prevState => ({
+        ...prevState,
+        boxDeleteAllDialogOpen: true,
+      }));
+    } else if (action.type === "deleteAllClose") {
+      setState(prevState => ({
+        ...prevState,
+        boxDeleteAllDialogOpen: false,
+      }));
+    } else if (action.type === "restoreItem") {
+      setState(prevState => {
+        const selectedItem = prevState.box.getById(prevState.selectedItemId);
+        if (selectedItem !== null) {
+          const newState = {
+            ...prevState,
+            pokemonIv: selectedItem.iv,
+          };
+          saveIvStateCache(newState);
+          return newState;
+        } else {
+          return prevState;
+        }
+      });
+    } else if (action.type === "saveItem") {
+      setState(prevState => {
+        const nickName = prevState.box.getById(prevState.selectedItemId)?.nickname;
+        const box = new PokemonBox(prevState.box.items);
+        box.set(prevState.selectedItemId, prevState.pokemonIv, nickName);
+        box.save();
+        const newState = {...prevState, box};
+        saveIvStateCache(newState);
+        return newState;
+      });
+    } else if (action.type === "closeAlert") {
+      setState(prevState => ({
+        ...prevState,
+        alertMessage: "",
+      }));
+    } else if (action.type === "showAlert") {
+      const msg = action.payload.message;
+      setState(prevState => ({
+        ...prevState,
+        alertMessage: msg,
+      }));
     } else {
       console.warn(`Unknown action type: ${action.type}`);
     }
-  }, [box]);
+  }, [state.box]);
 
-  const defaultResult = new PokemonStrength(defaultIV, params).calculate();
   const teamData = useMemo(() => {
     if (editBoxItemFlag) {
       setEditBoxItemFlag(false);
@@ -234,7 +381,7 @@ export default function PartyCalcApp() {
       try {
         const [serial, nickname] = s.split('@');
         const iv = PokemonIv.deserialize(serial);
-        return { iv, nickname };
+        return { iv, nickname: nickname || "" };
       } catch {
         return null;
       }
@@ -254,7 +401,7 @@ export default function PartyCalcApp() {
 
     // --- 3. 下準備：スキル計算に必要な「パーティ全体の基礎値」を1回だけ計算 ---
     const strengthPerHelpCalcParams = createStrengthParameter({
-      ...params,
+      ...state.parameter,
       addHelpingBonusEffect: false,
       totalFlags: [true, false, true], // 食材無効
       period: -1
@@ -286,11 +433,11 @@ export default function PartyCalcApp() {
         .filter((mm, i) => i !== idx)
         .map(mm => ({
           type: mm !== null ? mm.iv.pokemon.type : defaultIV.pokemon.type,
-          level: params.level === 0 ? (mm !== null ? mm.iv.level : defaultIV.level ) : params.level
+          level: state.parameter.level === 0 ? (mm !== null ? mm.iv.level : defaultIV.level ) : state.parameter.level
         }));
 
       const currentCalcParams = createStrengthParameter({
-        ...params,
+        ...state.parameter,
         addHelpingBonusEffect: false,
         helpBonusCount: Math.min(applicableHbCount, 4) as 0 | 1 | 2 | 3 | 4,
         totalFlags: [true, false, true],
@@ -337,15 +484,15 @@ export default function PartyCalcApp() {
       }
 
       // ボックスとの同期チェック
-      const originalBoxItem = box.items.find(item => item.nickname === nickname && item.iv.pokemonName === iv.pokemonName);
+      const originalBoxItem = state.box.items.find(item => item.nickname === nickname && item.iv.pokemonName === iv.pokemonName);
       const editFlag = !originalBoxItem || !originalBoxItem.iv.isEqual(iv);
       const isReplayhed = !!originalBoxItem && !originalBoxItem.iv.isEqual(iv);
 
-      const isEvoluved = params.evolved && !m.iv.pokemon.isFullyEvolved;
+      const isEvoluved = state.parameter.evolved && !m.iv.pokemon.isFullyEvolved;
 
       return {
         iv,
-        nickname: nickname || iv.pokemonName,
+        nickname: nickname,
         result: pokeStrengthCal,
         skillStrength,
         skillIngTotal,
@@ -355,7 +502,7 @@ export default function PartyCalcApp() {
         isEvoluved
       };
     });
-  }, [allTeams, deferredTeamIndex, params, box, editBoxItemFlag]);
+  }, [allTeams, deferredTeamIndex, state.parameter, state.box, editBoxItemFlag]);
 
   // handleSelectFromBox などの更新
 
@@ -395,10 +542,38 @@ export default function PartyCalcApp() {
     dispatch({ type: "addOrEditDone", payload: { item: value }});    
   }, [dispatch]);
 
+  const onPokemonIvChange = useCallback((iv: PokemonIv) => {
+    dispatch({ type: "updateIv", payload: { iv }});
+  }, [dispatch]);
+
+  const onBoxExportDialogClose = useCallback(() => {
+    dispatch({type: "exportClose"});
+  }, [dispatch]);
+  
+  const onBoxImportDialogClose = useCallback(() => {
+    dispatch({type: "importClose"});
+  }, [dispatch]);
+
+  const onBoxDeleteAllDialogClose = useCallback(() => {
+    dispatch({type: "deleteAllClose"});
+  }, [dispatch]);
+
+  const onAlertMessageClose = useCallback(() => {
+    dispatch({type: "closeAlert"});
+  }, [dispatch]);
+
+  const onRestoreClick = useCallback(() => {
+    dispatch({type: "restoreItem"});
+  }, [dispatch]);
+
+  const onSaveClick = useCallback(() => {
+    dispatch({type: "saveItem"});
+  }, [dispatch]);
+
   const handleReplayMember = useCallback((idx: number) => {
     if (teamData[idx] === null) return;
 
-    const originalBoxItem = box.items.find(item => 
+    const originalBoxItem = state.box.items.find(item => 
       item.nickname === teamData[idx]!.nickname && 
       item.iv.pokemonName === teamData[idx]!.iv.pokemonName
     );
@@ -407,35 +582,34 @@ export default function PartyCalcApp() {
     allTeams[currentTeamIndex][idx] = `${fullSerial}`;
     const newAllTeams = [...allTeams];
     saveTeams(newAllTeams);
-  }, [allTeams, teamData, currentTeamIndex, box]);
+  }, [allTeams, teamData, currentTeamIndex, state.box]);
 
-  const viewMemberIV = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].iv : defaultIV;
-  const viewMemberParam = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].param : params;
-  const pseudoState = {
-    parameter: params,
-  } as unknown as IvState;
+  const viewMemberIV = state.lowerTabIndex === 0 ? state.pokemonIv : ((teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].iv : defaultIV);
+  const viewMemberParam = state.lowerTabIndex === 0 ? state.parameter : ((teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].param : state.parameter);
+  const isSelectedItemEdited = state.selectedItemId !== -1 && state.lowerTabIndex === 0 && state.box.getById(state.selectedItemId)?.iv.isEqual(state.pokemonIv) === false;
   
   return (
     <div>
     <Box sx={{ p: 2, pb: 1 }}>
-      {strengthTabValue === 0 ?(
-        <TeamSummary teamData={teamData} />
+      {strengthTabValue === 0 && state.lowerTabIndex !== 0 ?(
+        <TeamSummary teamData={teamData} pokemonIv={state.pokemonIv} settings={state.parameter} energyDialogOpen={state.energyDialogOpen} dispatch={dispatch} />
         ) : (
           <Paper sx={{ p: 2, bgcolor: '#fdfdfd', borderRadius: 2 }}>
-            <StrengthBerryIngSkillView pokemonIv={viewMemberIV} settings={viewMemberParam} energyDialogOpen={energyDialogOpen} dispatch={dispatch} />
+            <StrengthBerryIngSkillView pokemonIv={viewMemberIV} settings={viewMemberParam} energyDialogOpen={state.energyDialogOpen} dispatch={dispatch} />
           </Paper>
         )
       }
-      <Box sx={{zIndex: 10, position: 'sticky', top: 0, bgcolor: '#fdfdfd', pt: 1, pb: 1, mt: 1, borderBottom: '1px solid #ddd'}}>
+
+      <Box sx={{zIndex: 100, position: 'sticky', top: 0, bgcolor: '#fdfdfd', pt: 1, pb: 0, mt: 1, borderBottom: '1px solid #ddd', display: state.lowerTabIndex !== 0 ? 'block' : 'none' }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1}}>
           <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成 {currentTeamIndex + 1}
             <IconButton 
-              size="small" 
-              onClick={handleStrengthTabChange} 
-              sx={{ position: 'relative', top: -2.5, left: 5, p: 0.2,  }}
-            >
-          <InfoOutlinedIcon sx={{ fontSize: 24, color: (strengthTabValue === 0 ? '#29ce10ff' : 'inherit')}} />
-        </IconButton>
+                size="small" 
+                onClick={handleStrengthTabChange} 
+                sx={{ position: 'relative', top: -2.5, left: 5, p: 0.2,  }}
+              >
+              <InfoOutlinedIcon sx={{ fontSize: 24, color: (strengthTabValue === 0 ? '#29ce10ff' : 'inherit')}} />
+            </IconButton>
           </Typography>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             {[0, 1, 2, 3, 4].map((idx) => (
@@ -454,56 +628,57 @@ export default function PartyCalcApp() {
           <Button size="small" variant="text" color="error" onClick={handleClearAll}>このセットを解除</Button>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+        <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
           {teamData.map((data, idx) => (
             <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
               <PartyMemberSlot member={data} onRemove={() => handleRemoveTeamMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} infoFlag={idx === teamItemViewIdx} />
             </Box>
           ))}
         </Box>
+      </Box>
 
-        <Box sx={{ px: 1}}>
-          <StrengthParameterSummary state={pseudoState} dispatch={dispatch} />
+      {state.lowerTabIndex !== 2 ? (
+        <Box sx={{ px: 0, pt: 1}}>
+          <StrengthParameterSummary state={state} dispatch={dispatch} />
         </Box>
-      </Box>
-      
-      
+      ) : (<></>)}
+      <LowerTabHeader state={state} dispatch={dispatch} isBoxEmpty={state.box.items.length === 0}/>
+    </Box>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 4, mb: 2 }}>
-        <Tabs value={tabValue} onChange={(_e, v) => setTabValue(v)} variant="fullWidth">
-          <Tab label="ポケモン選択" />
-          <Tab label="計算条件設定" />
-        </Tabs>
-      </Box>
-      </Box>
-
-      <div style={{display: tabValue === 0 ? 'block' : 'none'}}>
-        <BoxView items={box.items} iv={boxIv} selectedId={selectedId} dispatch={dispatch} parameter={params} />
+      <div style={{margin: '0 0.5rem 10rem 0.5rem', display: state.lowerTabIndex === 0 ? 'block' : 'none' }}>
+          <IvForm pokemonIv={state.pokemonIv} onChange={onPokemonIvChange}/>
       </div>
-      <div style={{ contentVisibility: 'auto' , display: tabValue === 1 ? 'block' : 'none' }}>
+      <div style={{display: state.lowerTabIndex === 1 ? 'block' : 'none'}}>
+        <BoxView items={state.box.items} iv={state.pokemonIv} selectedId={state.selectedItemId} dispatch={dispatch} parameter={state.parameter} />
+      </div>
+      <div style={{ contentVisibility: 'auto' , display: state.lowerTabIndex === 2 ? 'block' : 'none' }}>
         <Box sx={{ bgcolor: '#fff', p: 1, borderRadius: 2 }}>
           <StrengthParameterForm 
             dispatch={dispatch} 
-            value={params} 
-            hasHelpingBonus={teamData.some(d => d?.iv.hasHelpingBonusInActiveSubSkills)} 
-          />
-          <EnergyDialog
-            open={energyDialogOpen}
-            iv={defaultIV}
-            parameter={params}
-            energy={defaultResult.energy}
-            onClose={() => dispatch({ type: "closeEnergyDialog" })}
-            dispatch={dispatch}
+            value={state.parameter} 
+            hasHelpingBonus={state.pokemonIv.hasHelpingBonusInActiveSubSkills} 
           />
         </Box>
       </div>
 
       <BoxItemDialog
-        // key={"dlg" + (new Date()).getTime().toString()}
         open={boxItemDialogOpen} boxItem={editBoxItem}
         isEdit={isEditBoxItem}
         onClose={onBoxItemEditDialogClose} onChange={onBoxItemDialogChange}
       />
+      <BoxExportDialog box={state.box}
+          open={state.boxExportDialogOpen} onClose={onBoxExportDialogClose}/>
+      <BoxImportDialog box={state.box}
+          open={state.boxImportDialogOpen} onClose={onBoxImportDialogClose}/>
+      <BoxDeleteAllDialog box={state.box}
+          open={state.boxDeleteAllDialogOpen} onClose={onBoxDeleteAllDialogClose}/>
+      <Snackbar open={state.alertMessage !== ""} message={t(state.alertMessage)}
+          autoHideDuration={2000} onClose={onAlertMessageClose}/>
+      <Snackbar open={isSelectedItemEdited} message={t('pokemon in the box is edited')}
+          action={<>
+              <Button onClick={onRestoreClick}>{t('reset')}</Button>
+              <Button onClick={onSaveClick}>{t('save')}</Button>
+          </>}/>
     </div>
   );
 }
