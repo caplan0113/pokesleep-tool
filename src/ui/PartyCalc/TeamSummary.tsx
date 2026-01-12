@@ -1,5 +1,5 @@
 import React from 'react';
-import { Paper, Box, Typography, Divider } from '@mui/material';
+import { Paper, Box, Typography, Divider, ToggleButton } from '@mui/material';
 import PokemonStrength, { StrengthResult } from '../../util/PokemonStrength';
 import { formatWithComma } from '../../util/NumberUtil';
 import { useTranslation } from 'react-i18next';
@@ -25,8 +25,37 @@ const TeamSummary = memo(({ teamData, pokemonIv, settings, energyDialogOpen, dis
 
   const result = new PokemonStrength(pokemonIv, settings).calculate();
 
+  const [NCFlag, setNCFlag] = React.useState(
+    () => {
+      const nightCapFlag = localStorage.getItem("partyCalc_nightCapFlag") === "true";
+      return nightCapFlag;
+    }
+  );
+  
+  const toggleNCFlag = () => {
+    setNCFlag((prev) => {
+      localStorage.setItem("partyCalc_nightCapFlag", (!prev).toString());
+      return !prev;
+    });
+  };
+
   const totals = useMemo(() => {
-    return teamData.reduce((acc, data) => {
+    const pikachuIv = new PokemonIv({ pokemonName: "Pikachu", level: 20 });
+    const pikachuStrength = new PokemonStrength(pikachuIv, settings);
+    const pikachuResult = pikachuStrength.calculate();
+    const NC_HelpCount = (settings.period > 0 && NCFlag) ? (settings.period / (3540/3600)): 0;
+    const NC_BerryStrength = Math.ceil(pikachuResult.berryStrength*pikachuStrength.berryStrengthBonus) * 2 * 0.583 * NC_HelpCount;
+    const NC_IngredientPerHelp = {
+      "apple": 0.2083,
+      "cacao": 0.125,
+      "honey": 0.0833
+    }
+    const NC_Ingredient = Object.entries(NC_IngredientPerHelp).reduce((acc, [name, val]) => {
+      acc[name as IngredientName] = val * 2 * NC_HelpCount;
+      return acc;
+    }, {} as Record<IngredientName, number>);
+
+    const teamTotals = teamData.reduce((acc, data) => {
       if (!data) return acc;
       acc.total += data.result.totalStrength;
       acc.berry += data.result.berryTotalStrength;
@@ -46,7 +75,15 @@ const TeamSummary = memo(({ teamData, pokemonIv, settings, energyDialogOpen, dis
       }
       return acc;
     }, { total: 0, berry: 0, ingredientEnergy: 0, skill: 0, ingCounts: {} as Record<IngredientName, number> });
-  }, [teamData]);
+    
+    teamTotals.total += NC_BerryStrength;
+    teamTotals.berry += NC_BerryStrength;
+    Object.entries(NC_Ingredient).forEach(([name, count]) => {
+      teamTotals.ingCounts[name as IngredientName] = (teamTotals.ingCounts[name as IngredientName] || 0) + count;
+    });
+
+    return teamTotals;
+  }, [teamData, NCFlag, settings]);
 
   const sortedIngredients = useMemo(() => {
     return (Object.entries(totals.ingCounts) as [IngredientName, number][])
@@ -62,7 +99,18 @@ const TeamSummary = memo(({ teamData, pokemonIv, settings, energyDialogOpen, dis
         <Typography variant="h6" fontWeight="bold">
           {t('team total (Not Ingredient)')}: {formatWithComma(Math.floor(totals.total))}
         </Typography>
+        <ToggleButton
+          value="nightCap"
+          color="primary"
+          selected={NCFlag}
+          onChange={toggleNCFlag}
+          sx={{ ml: 'auto', fontSize: '0.75rem', py: 0.5, px: 1, borderRadius: 2 }}
+        >
+          ナイトキャップピカチュウ
+        </ToggleButton>
       </Box>
+
+      
 
       <Box sx={{ display: 'flex', justifyContent: 'space-around', textAlign: 'center', mb: 1.5 }}>
         <Box>
