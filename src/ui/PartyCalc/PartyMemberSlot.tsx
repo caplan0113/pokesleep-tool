@@ -3,7 +3,7 @@ import { Box, Paper, Typography, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 // import EditDocument from '@mui/icons-material/EditDocument';
 import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
-import { StrengthParameter, StrengthResult } from '../../util/PokemonStrength';
+import PokemonStrength, { StrengthParameter, StrengthResult } from '../../util/PokemonStrength';
 import PokemonIv from '../../util/PokemonIv';
 import PokemonIcon from '../IvCalc/PokemonIcon';
 import IngredientIcon from '../IvCalc/IngredientIcon';
@@ -13,9 +13,30 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ReplayIcon from '@mui/icons-material/Replay';
 import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
 import { memo } from 'react';
+import HelperSkillDialog from './HelperSkillDialog';
+import SavedSearchIcon from '@mui/icons-material/SavedSearch';
 
 interface PartyMemberSlotProps {
-  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null , param: StrengthParameter, editFlag: boolean, isReplayhed: boolean, isEvoluved: boolean, dTouchFlag: boolean} | null;
+  member: { 
+    iv: PokemonIv; 
+    nickname: string; 
+    result: StrengthResult, 
+    skillStrength: number, 
+    skillIngTotal: Record<string, number> | null , 
+    skillInfo: {
+      value: ({
+          name: string;
+          strength: PokemonStrength;
+          result: StrengthResult;
+          flag: boolean;
+      } | null)[],
+      baseValue: number;
+    } | null;
+    param: StrengthParameter, 
+    editFlag: boolean, 
+    isReplayhed: boolean, 
+    isEvoluved: boolean, 
+    dTouchFlag: boolean} | null;
   onRemove: () => void;
   onEdit: () => void;
   onView: () => void;
@@ -27,6 +48,8 @@ interface PartyMemberSlotProps {
 const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, onTouch, infoFlag }: PartyMemberSlotProps) => {
   // エラー回避のため、使用していない場合は取得しないか、削除します
   const { t } = useTranslation(); 
+
+  const [helperSkillDialogOpen, setHelperSkillDialogOpen] = React.useState(false);
 
   if (!member) {
     return (
@@ -47,10 +70,11 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, onTo
     );
   }
 
-  const { iv, nickname, result, skillStrength, param, editFlag, isReplayhed, isEvoluved, dTouchFlag } = member;
+  const { iv, nickname, result, skillStrength, skillInfo, param, editFlag, isReplayhed, isEvoluved, dTouchFlag } = member;
   const nickname_ = (nickname || t(`pokemons.${iv.pokemonName}`)) + (isEvoluved ? " ★" : "");
 
   return (
+    <>
     <Paper 
       sx={{ 
         p: 0.5, 
@@ -84,6 +108,15 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, onTo
       >
         <DoNotTouchIcon sx={{ fontSize: 18, color: (dTouchFlag ? '#29ce10ff' : 'inherit') }} />
       </IconButton>
+      {skillInfo &&
+      <IconButton 
+        size="small" 
+        onClick={() => setHelperSkillDialogOpen(true)}
+        sx={{ position: 'absolute', top: 0, left: 54, p: 0.2 }}
+      >
+        <SavedSearchIcon sx={{ fontSize: 18, color: (helperSkillDialogOpen ? '#29ce10ff' : 'inherit')}} />
+      </IconButton>
+      }
 
       <IconButton 
         size="small" 
@@ -164,6 +197,17 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, onTo
         </Typography>
       </Box>
     </Paper>
+    {skillInfo &&
+    <HelperSkillDialog
+      open={helperSkillDialogOpen}
+      onClose={() => setHelperSkillDialogOpen(false)}
+      skillName={iv.pokemon.skill}
+      skillStrength={skillStrength}
+      result={result}
+      skillInfo={skillInfo}
+    />
+    }
+    </>
   );
 });
 

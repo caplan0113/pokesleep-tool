@@ -130,21 +130,17 @@ export default function PartyCalcApp() {
     // 各自の「ヘルプ1回あたりの値」をあらかじめ計算しておく
     const preCalculatedBaseStats = members.map(m => {
       if (!m) return null;
-      const pokeStrength = new PokemonStrength(m.iv, strengthPerHelpCalcParams).calculate();
-      if (m.dTouchFlag) {
-        return {
-          berry: 0,
-          ing: []
-        }
-      } else {
-        return {
-          berry: pokeStrength.berryTotalStrength,
-          ing: pokeStrength.ingredients
-        };
-      }
+      const strength = new PokemonStrength(m.iv, strengthPerHelpCalcParams)
+      const result = strength.calculate();
+      return {
+        name: m.nickname || t(`pokemons.${m.iv.pokemonName}`),
+        strength,
+        result,
+        flag: m.dTouchFlag
+      };
     });
 
-    const teamStrengthPerHelpBerryTotal = preCalculatedBaseStats.reduce((acc, val) => acc + (val?.berry || 0), 0);
+    const teamStrengthPerHelpBerryTotal = preCalculatedBaseStats.filter(stat => stat !== null && !stat.flag).reduce((acc, val) => acc + (val?.result?.berryTotalStrength || 0), 0);
 
     // --- 4. 各スロットの個別計算（メインループ） ---
     return members.map((m, idx) => {
@@ -182,6 +178,7 @@ export default function PartyCalcApp() {
       // --- 5. スキル計算（preCalculatedBaseStats を利用して再計算を回避） ---
       let skillStrength = 0;
       let skillIngTotal: Record<string, number> | null = null;
+      let skillInfo = null;
 
       const skillName = iv.pokemon.skill;
       if (skillName.includes("Helper Boost")) {
@@ -191,22 +188,28 @@ export default function PartyCalcApp() {
         
         skillIngTotal = {};
         preCalculatedBaseStats.forEach(stat => {
-          stat?.ing.forEach(ing => {
+          if (stat === null || stat.flag) return;
+          stat?.result?.ingredients.forEach(ing => {
             if (ing.name === "unknown") return;
             skillIngTotal![ing.name] = (skillIngTotal![ing.name] || 0) + (ing.count * skillBaseValue * skillCount);
           });
         });
+        
+        skillInfo = {value: preCalculatedBaseStats, baseValue: skillBaseValue};
       } else if (skillName.includes("Extra Helpful S")) {
         const ratio = pokeStrengthCal.skillValue / validMembers.length;
         skillStrength = ratio * teamStrengthPerHelpBerryTotal;
         
         skillIngTotal = {};
         preCalculatedBaseStats.forEach(stat => {
-          stat?.ing.forEach(ing => {
+          if (stat === null || stat.flag) return;
+          stat?.result?.ingredients.forEach(ing => {
             if (ing.name === "unknown") return;
             skillIngTotal![ing.name] = (skillIngTotal![ing.name] || 0) + (ing.count * ratio);
           });
         });
+
+        skillInfo = {value: preCalculatedBaseStats, baseValue: pokeStrengthCal.skillValuePerTrigger/validMembers.length};
       } else if (!["Ingredient Magnet S", "Cooking Power-Up S", "Ingredient Draw S"].some(s => skillName.includes(s))) {
         skillStrength = pokeStrengthCal.skillStrength + pokeStrengthCal.skillStrength2;
       }
@@ -224,6 +227,7 @@ export default function PartyCalcApp() {
         result: pokeStrengthCal,
         skillStrength,
         skillIngTotal,
+        skillInfo,
         param: currentCalcParams,
         editFlag,
         isReplayhed,
@@ -231,7 +235,7 @@ export default function PartyCalcApp() {
         dTouchFlag
       };
     });
-  }, [allTeams, deferredTeamIndex, state.parameter, state.box, editBoxItemFlag]);
+  }, [allTeams, deferredTeamIndex, state.parameter, state.box, editBoxItemFlag, t]);
 
   // 共通の dispatch 関数
   const dispatch = useCallback((action: IvAction) => {
