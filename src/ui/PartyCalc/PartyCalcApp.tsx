@@ -35,7 +35,9 @@ export default function PartyCalcApp() {
       // 5セット分の配列を初期化
       return saved ? JSON.parse(saved) : Array(5).fill(null).map(() => [[null, false], [null, false], [null, false], [null, false], [null, false]]);
     } catch {
-      return Array(5).fill(null).map(() => [[null, false], [null, false], [null, false], [null, false], [null, false]]);
+      const reset = Array(5).fill(null).map(() => [[null, false], [null, false], [null, false], [null, false], [null, false]]);
+      localStorage.setItem('PstPartySelectionGroups', JSON.stringify(reset));
+      return reset;
     }
   });
 

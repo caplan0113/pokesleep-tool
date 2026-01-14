@@ -57,7 +57,7 @@ const TeamSummary = memo(({ teamData, pokemonIv, settings, energyDialogOpen, dis
 
     const teamTotals = teamData.reduce((acc, data) => {
       if (!data) return acc;
-      acc.total += data.result.totalStrength;
+      acc.total += data.result.berryTotalStrength + data.skillStrength;
       acc.berry += data.result.berryTotalStrength;
       acc.ingredientEnergy += data.result.ingStrength;
       acc.skill += data.skillStrength;
