@@ -57,7 +57,7 @@ const HelperSkillDialog = ({ open, onClose, skillName, skillStrength, result, sk
         <StyledInfoDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ px: 1, pt: 1, pb: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{t(skillName)}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{t(`skills.${skillName}`)}</Typography>
                     <MainSkillIcon mainSkill={skillName} />
                     <Typography variant="h6" sx={{ ml: 1 }}>{formatNice(skillStrength, t)}</Typography>
                 </Box>
