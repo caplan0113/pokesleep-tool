@@ -29,13 +29,13 @@ const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
 export default function PartyCalcApp() {
   const { t } = useTranslation();
   // 1. パーティ全体のデータを管理 (5セット分)
-  const [allTeams, setAllTeams] = useState<(string | null)[][]>(() => {
+  const [allTeams, setAllTeams] = useState<[(string | null), boolean][][]>(() => {
     const saved = localStorage.getItem('PstPartySelectionGroups');
     try {
       // 5セット分の配列を初期化
-      return saved ? JSON.parse(saved) : Array(5).fill(null).map(() => [null, null, null, null, null]);
+      return saved ? JSON.parse(saved) : Array(5).fill(null).map(() => [[null, false], [null, false], [null, false], [null, false], [null, false]]);
     } catch {
-      return Array(5).fill(null).map(() => [null, null, null, null, null]);
+      return Array(5).fill(null).map(() => [[null, false], [null, false], [null, false], [null, false], [null, false]]);
     }
   });
 
@@ -86,288 +86,6 @@ export default function PartyCalcApp() {
     selectedIdRef.current = state.selectedItemId;
   }, [state.selectedItemId]);
 
-
-  
-
-  // 3. データを保存する共通関数
-  const saveTeams = (newAllTeams: (string | null)[][]) => {
-    setAllTeams(newAllTeams);
-    localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
-  };
-
-  // 4. パーティ切り替え
-  const handleSwitchTeam = useCallback((idx: number) => {
-    setCurrentTeamIndex(idx);
-    localStorage.setItem('PstCurrentTeamIndex', idx.toString());
-
-    React.startTransition(() => {
-      setStrengthTabValue(0);
-      setTeamItemViewIdx(null);
-    });
-  }, []);
-
-  const handleClearAll = useCallback(() => {
-    if (window.confirm(`パーティ ${currentTeamIndex + 1} をリセットしますか？`)) {
-      const newAllTeams = [...allTeams];
-      newAllTeams[currentTeamIndex] = [null, null, null, null, null];
-      saveTeams(newAllTeams);
-    }
-  }, [allTeams, currentTeamIndex]);
-
-  const handleStrengthTabChange = useCallback(() => {
-    setStrengthTabValue(0);
-    setTeamItemViewIdx(null);
-  }, []); 
-
-  const dispatch = useCallback((action: IvAction) => {
-    if (action.type === "changeParameter") {
-      const newParam = action.payload.parameter;
-      setState(prevState => ({
-        ...prevState,
-        parameter: newParam,
-      }));
-      localStorage.setItem('PstStrenghParam', JSON.stringify(newParam));
-    } else if (action.type === "openEnergyDialog") {
-      setState(prevState => ({
-        ...prevState,
-        energyDialogOpen: true,
-      }));
-    } else if (action.type === "closeEnergyDialog") {
-      setState(prevState => ({
-        ...prevState,
-        energyDialogOpen: false,
-      }));
-    } else if (action.type === "changeLowerTab") {
-      setState(prevState => {
-        const newState = {
-          ...prevState,
-          lowerTabIndex: action.payload.index,
-        };
-        saveIvStateCache(newState);
-        return newState;
-    });
-      
-    } else if (action.type === "select") {
-      const id = action.payload.id;
-      const fullSerial = state.box.getById(id)?.serialize() || "";
-      if (!fullSerial) return;
-
-      const selectIv = state.box.getById(id)?.iv;
-      setState(prevState => {
-        const newState = {
-          ...prevState,
-          pokemonIv: selectIv || defaultIV,
-        };
-        saveIvStateCache(newState);
-        return newState;
-      });
-
-      const selectedId = selectedIdRef.current;
-      if (selectedId === id) {
-        setAllTeams(prevAllTeams => {
-          const currentTeamIndex = currentIndexRef.current;
-          const newAllTeams = [...prevAllTeams];
-          const currentTeam = [...newAllTeams[currentTeamIndex]];
-          const emptyIndex = currentTeam.findIndex(s => !s);
-          
-          if (emptyIndex !== -1) {
-            currentTeam[emptyIndex] = fullSerial;
-            newAllTeams[currentTeamIndex] = currentTeam;
-            localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
-            return newAllTeams;
-          }
-          return prevAllTeams;
-        });
-      } else {
-        setState(prevState => {
-          const newState = {
-            ...prevState,
-            selectedItemId: id,
-          };
-          saveIvStateCache(newState);
-          return newState;
-        });
-      } 
-    } else if (action.type === "updateIv") {
-      const iv = action.payload.iv;
-      setState(prevState => {
-        const newState = {
-          ...prevState,
-          pokemonIv: iv,
-        };
-        saveIvStateCache(newState);
-        return newState;
-      });
-    } else if (action.type === "edit") {
-      setIsEditBoxItem(true);
-      setBoxItemDialogOpen(true);
-      setState(prevState => {
-        const newState = {
-          ...prevState,
-          selectedItemId: action.payload.id,
-        };
-        saveIvStateCache(newState);
-        return newState;
-      });
-      setEditBoxItem(state.box.getById(action.payload.id));
-    } else if (action.type === "dup") {
-      const originalBoxItem = state.box.getById(action.payload.id);
-      if (originalBoxItem === null || !state.box.canAdd) return;
-      const addId = state.box.add(originalBoxItem.iv, originalBoxItem.nickname);
-      state.box.save();
-      setState(prevState => {
-        const newState = {
-          ...prevState,
-          selectedItemId: addId,
-        };
-        saveIvStateCache(newState);
-        return newState;
-      });
-    } else if (action.type === "remove") {
-      if (window.confirm('ボックスから選択中のポケモンを削除しますか？')) {
-        state.box.remove(action.payload.id);
-        state.box.save();
-      }
-      setState(prevState => {
-        const newState = {
-          ...prevState,
-          selectedItemId: -1,
-        };
-        saveIvStateCache(newState);
-        return newState;
-      });
-    } else if (action.type === "editDialogClose") {
-      setBoxItemDialogOpen(false);
-    } else if (action.type === "addOrEditDone") {
-      const value = action.payload.item;
-      if (!value) return;
-
-      const currentTeamIndex = currentIndexRef.current;
-      const teamItemEditIdx = teamItemEditIdxRef.current;
-
-      if (value.id === -1) {
-        if (teamItemEditIdx !== null) {
-          const fullSerial = `${value.iv.serialize()}@${value.nickname || ""}`;
-          
-          setAllTeams(prevAllTeams => {
-            const newAllTeams = [...prevAllTeams];
-            newAllTeams[currentTeamIndex][teamItemEditIdx] = fullSerial;
-            localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
-            return newAllTeams;
-          });
-        } else {
-          dispatch({type: "addThis", payload: value});
-        }
-      } else {
-        setEditBoxItemFlag(true);
-        // 既存のボックスアイテムを編集した場合は、IDで探して更新
-        const originalBoxItem = state.box.getById(value.id);
-        if (!originalBoxItem) return;
-        state.box.set(value.id, value.iv, value.nickname);
-        state.box.save();
-      }
-      setTeamItemEditIdx(null);
-    } else if (action.type === "add") {
-      if (!state.box.canAdd) {
-        alert("ボックスの上限に達しています。");
-        return;
-      }
-      setIsEditBoxItem(false);
-      setBoxItemDialogOpen(true);
-    } else if (action.type === "addThis") {
-      if (!state.box.canAdd) {
-        alert("ボックスの上限に達しています。");
-        return;
-      }
-      const item = action.payload;
-      const addId = state.box.add(item.iv, item.nickname);
-      state.box.save();
-
-      setState(prevState => {
-        const newState = {
-          ...prevState,
-          selectedItemId: addId,
-          pokemonIv: item.iv,
-        };
-        saveIvStateCache(newState);
-        return newState;
-      });
-    } else if (action.type === "export") {
-      setState(prevState => ({
-        ...prevState,
-        boxExportDialogOpen: true,
-      }));
-    } else if (action.type === "exportClose") {
-      setState(prevState => ({
-        ...prevState,
-        boxExportDialogOpen: false,
-      }));
-    } else if (action.type === "import") {
-      if (!state.box.canAdd) {
-        alert("ボックスの上限に達しています。");
-        return;
-      }
-      setState(prevState => ({
-        ...prevState,
-        boxImportDialogOpen: true,
-      }));
-    } else if (action.type === "importClose") {
-      const box = new PokemonBox(state.box.items);
-      setState(prevState => ({
-        ...prevState,
-        box: box,
-        boxImportDialogOpen: false,
-      }));
-    } else if (action.type === "deleteAll") {
-      setState(prevState => ({
-        ...prevState,
-        boxDeleteAllDialogOpen: true,
-      }));
-    } else if (action.type === "deleteAllClose") {
-      setState(prevState => ({
-        ...prevState,
-        boxDeleteAllDialogOpen: false,
-      }));
-    } else if (action.type === "restoreItem") {
-      setState(prevState => {
-        const selectedItem = prevState.box.getById(prevState.selectedItemId);
-        if (selectedItem !== null) {
-          const newState = {
-            ...prevState,
-            pokemonIv: selectedItem.iv,
-          };
-          saveIvStateCache(newState);
-          return newState;
-        } else {
-          return prevState;
-        }
-      });
-    } else if (action.type === "saveItem") {
-      setState(prevState => {
-        const nickName = prevState.box.getById(prevState.selectedItemId)?.nickname;
-        const box = new PokemonBox(prevState.box.items);
-        box.set(prevState.selectedItemId, prevState.pokemonIv, nickName);
-        box.save();
-        const newState = {...prevState, box};
-        saveIvStateCache(newState);
-        return newState;
-      });
-    } else if (action.type === "closeAlert") {
-      setState(prevState => ({
-        ...prevState,
-        alertMessage: "",
-      }));
-    } else if (action.type === "showAlert") {
-      const msg = action.payload.message;
-      setState(prevState => ({
-        ...prevState,
-        alertMessage: msg,
-      }));
-    } else {
-      console.warn(`Unknown action type: ${action.type}`);
-    }
-  }, [state.box]);
-
   const teamData = useMemo(() => {
     if (editBoxItemFlag) {
       setEditBoxItemFlag(false);
@@ -377,11 +95,11 @@ export default function PartyCalcApp() {
 
     // --- 1. メンバーの復元（デシリアライズは1回だけ） ---
     const members = teamSerials.map(s => {
-      if (!s) return null;
+      if (!s || !s[0]) return null;
       try {
-        const [serial, nickname] = s.split('@');
+        const [serial, nickname] = s[0].split('@');
         const iv = PokemonIv.deserialize(serial);
-        return { iv, nickname: nickname || "" };
+        return { iv, nickname: nickname || "", dTouchFlag: s[1] };
       } catch {
         return null;
       }
@@ -411,10 +129,17 @@ export default function PartyCalcApp() {
     const preCalculatedBaseStats = members.map(m => {
       if (!m) return null;
       const pokeStrength = new PokemonStrength(m.iv, strengthPerHelpCalcParams).calculate();
-      return {
-        berry: pokeStrength.berryTotalStrength,
-        ing: pokeStrength.ingredients
-      };
+      if (m.dTouchFlag) {
+        return {
+          berry: 0,
+          ing: []
+        }
+      } else {
+        return {
+          berry: pokeStrength.berryTotalStrength,
+          ing: pokeStrength.ingredients
+        };
+      }
     });
 
     const teamStrengthPerHelpBerryTotal = preCalculatedBaseStats.reduce((acc, val) => acc + (val?.berry || 0), 0);
@@ -422,7 +147,7 @@ export default function PartyCalcApp() {
     // --- 4. 各スロットの個別計算（メインループ） ---
     return members.map((m, idx) => {
       if (!m) return null;
-      const { iv, nickname } = m;
+      const { iv, nickname, dTouchFlag } = m;
 
       // ヘルプボーナスの適用計算
       const isOwnerHB = iv.hasHelpingBonusInActiveSubSkills;
@@ -445,7 +170,8 @@ export default function PartyCalcApp() {
           auto: false,
           members: berryBurstTeam,
           species: Math.max(teamSpecies[iv.pokemon.type]?.size || 1, 1)
-        }
+        },
+        tapFrequency: (dTouchFlag ? "none" : state.parameter.tapFrequency),
       });
 
       const pokeStrength = new PokemonStrength(iv, currentCalcParams);
@@ -499,26 +225,339 @@ export default function PartyCalcApp() {
         param: currentCalcParams,
         editFlag,
         isReplayhed,
-        isEvoluved
+        isEvoluved,
+        dTouchFlag
       };
     });
   }, [allTeams, deferredTeamIndex, state.parameter, state.box, editBoxItemFlag]);
 
-  // handleSelectFromBox などの更新
-
-  const handleRemoveTeamMember = useCallback((idx: number) => {
-    const newAllTeams = [...allTeams];
-    const currentTeam = [...newAllTeams[currentTeamIndex]];
-    currentTeam[idx] = null;
-    newAllTeams[currentTeamIndex] = currentTeam;
-    saveTeams(newAllTeams);
-    setStrengthTabValue(0);
-    setTeamItemViewIdx(prevIdx => {
-      if (prevIdx === idx) return null;
-      return prevIdx;
+  // 共通の dispatch 関数
+  const dispatch = useCallback((action: IvAction) => {
+    if (action.type === "changeParameter") { // パラメータ変更
+      const newParam = action.payload.parameter;
+      setState(prevState => ({
+        ...prevState,
+        parameter: newParam,
+      }));
+      localStorage.setItem('PstStrenghParam', JSON.stringify(newParam));
+    } else if (action.type === "openEnergyDialog") { // エナジーダイアログ開
+      setState(prevState => ({
+        ...prevState,
+        energyDialogOpen: true,
+      }));
+    } else if (action.type === "closeEnergyDialog") { // エナジーダイアログ閉
+      setState(prevState => ({
+        ...prevState,
+        energyDialogOpen: false,
+      }));
+    } else if (action.type === "changeLowerTab") { // 下部タブ切替
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          lowerTabIndex: action.payload.index,
+        };
+        saveIvStateCache(newState);
+        return newState;
     });
-  }, [allTeams, currentTeamIndex]);
+      
+    } else if (action.type === "select") { // ボックスから選択
+      const id = action.payload.id;
+      const fullSerial = state.box.getById(id)?.serialize() || "";
+      if (!fullSerial) return;
 
+      const selectIv = state.box.getById(id)?.iv;
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          pokemonIv: selectIv || defaultIV,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
+
+      const selectedId = selectedIdRef.current;
+      if (selectedId === id) { // パーティ編成モードの場合
+        setAllTeams(prevAllTeams => {
+          const currentTeamIndex = currentIndexRef.current;
+          const newAllTeams = prevAllTeams.map((team, tIdx) => {
+            if (tIdx !== currentTeamIndex) return team;
+            const emptyIndex = team.findIndex(s => !s[0]);
+            if (emptyIndex !== -1) {
+              return team.map((item, iIdx) => {
+                if (iIdx !== emptyIndex) return item;
+                return [fullSerial, false] as [(string | null), boolean];
+              });
+            } else {
+              return team;
+            }
+          });
+          localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
+          return newAllTeams;
+        });
+      } else { // 通常選択モードの場合
+        setState(prevState => {
+          const newState = {
+            ...prevState,
+            selectedItemId: id,
+          };
+          saveIvStateCache(newState);
+          return newState;
+        });
+      } 
+    } else if (action.type === "updateIv") { // IV更新
+      const iv = action.payload.iv;
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          pokemonIv: iv,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
+    } else if (action.type === "edit") { // ボックスアイテム編集
+      setIsEditBoxItem(true);
+      setBoxItemDialogOpen(true);
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          selectedItemId: action.payload.id,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
+      setEditBoxItem(state.box.getById(action.payload.id));
+    } else if (action.type === "dup") { // ボックスアイテム複製
+      const originalBoxItem = state.box.getById(action.payload.id);
+      if (originalBoxItem === null || !state.box.canAdd) return;
+      const addId = state.box.add(originalBoxItem.iv, originalBoxItem.nickname);
+      state.box.save();
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          selectedItemId: addId,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
+    } else if (action.type === "remove") { // ボックスアイテム削除
+      if (window.confirm('ボックスから選択中のポケモンを削除しますか？')) {
+        state.box.remove(action.payload.id);
+        state.box.save();
+      }
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          selectedItemId: -1,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
+    } else if (action.type === "editDialogClose") { // ボックスアイテム編集ダイアログ閉
+      setBoxItemDialogOpen(false);
+    } else if (action.type === "addOrEditDone") { // ボックスアイテム編集・追加完了
+      const value = action.payload.item;
+      if (!value) return;
+
+      const currentTeamIndex = currentIndexRef.current;
+      const teamItemEditIdx = teamItemEditIdxRef.current;
+
+      if (value.id === -1) { // 新規追加またはパーティ編成モードでの編集
+        if (teamItemEditIdx !== null) { // 既存のパーティメンバーを編集した場合
+          const fullSerial = `${value.iv.serialize()}@${value.nickname || ""}`;
+          
+          setAllTeams(prevAllTeams => {
+            const newAllTeams = prevAllTeams.map((team, tIdx) => {
+              if (tIdx !== currentTeamIndex) return team;
+              return team.map((item, iIdx) => {
+                if (iIdx !== teamItemEditIdx) return item;
+                return [fullSerial, false] as [(string | null), boolean];
+              });
+            });
+            localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
+            return newAllTeams;
+          });
+        } else { // 通常のボックスアイテム追加
+          dispatch({type: "addThis", payload: value});
+        }
+      } else { // 既存のボックスアイテムを編集した場合
+        setEditBoxItemFlag(true);
+        // 既存のボックスアイテムを編集した場合は、IDで探して更新
+        const originalBoxItem = state.box.getById(value.id);
+        if (!originalBoxItem) return;
+        state.box.set(value.id, value.iv, value.nickname);
+        state.box.save();
+      }
+      setTeamItemEditIdx(null);
+    } else if (action.type === "add") { // ボックスアイテム追加
+      if (!state.box.canAdd) {
+        alert("ボックスの上限に達しています。");
+        return;
+      }
+      setIsEditBoxItem(false);
+      setBoxItemDialogOpen(true);
+    } else if (action.type === "addThis") { // ボックスアイテム追加（確定）
+      if (!state.box.canAdd) {
+        alert("ボックスの上限に達しています。");
+        return;
+      }
+      const item = action.payload;
+      const addId = state.box.add(item.iv, item.nickname);
+      state.box.save();
+
+      setState(prevState => {
+        const newState = {
+          ...prevState,
+          selectedItemId: addId,
+          pokemonIv: item.iv,
+        };
+        saveIvStateCache(newState);
+        return newState;
+      });
+    } else if (action.type === "export") { // ボックスエクスポート
+      setState(prevState => ({
+        ...prevState,
+        boxExportDialogOpen: true,
+      }));
+    } else if (action.type === "exportClose") { // ボックスエクスポート閉
+      setState(prevState => ({
+        ...prevState,
+        boxExportDialogOpen: false,
+      }));
+    } else if (action.type === "import") { // ボックスインポート
+      if (!state.box.canAdd) {
+        alert("ボックスの上限に達しています。");
+        return;
+      }
+      setState(prevState => ({
+        ...prevState,
+        boxImportDialogOpen: true,
+      }));
+    } else if (action.type === "importClose") { // ボックスインポート閉
+      const box = new PokemonBox(state.box.items);
+      setState(prevState => ({
+        ...prevState,
+        box: box,
+        boxImportDialogOpen: false,
+      }));
+    } else if (action.type === "deleteAll") { // ボックス全削除
+      setState(prevState => ({
+        ...prevState,
+        boxDeleteAllDialogOpen: true,
+      }));
+    } else if (action.type === "deleteAllClose") { // ボックス全削除閉
+      setState(prevState => ({
+        ...prevState,
+        boxDeleteAllDialogOpen: false,
+      }));
+    } else if (action.type === "restoreItem") { // 選択中アイテムをIV状態に復元
+      setState(prevState => {
+        const selectedItem = prevState.box.getById(prevState.selectedItemId);
+        if (selectedItem !== null) {
+          const newState = {
+            ...prevState,
+            pokemonIv: selectedItem.iv,
+          };
+          saveIvStateCache(newState);
+          return newState;
+        } else {
+          return prevState;
+        }
+      });
+    } else if (action.type === "saveItem") { // 選択中アイテムにIV状態を保存
+      setState(prevState => {
+        const nickName = prevState.box.getById(prevState.selectedItemId)?.nickname;
+        const box = new PokemonBox(prevState.box.items);
+        box.set(prevState.selectedItemId, prevState.pokemonIv, nickName);
+        box.save();
+        const newState = {...prevState, box};
+        saveIvStateCache(newState);
+        return newState;
+      });
+    } else if (action.type === "closeAlert") { // アラートメッセージ閉
+      setState(prevState => ({
+        ...prevState,
+        alertMessage: "",
+      }));
+    } else if (action.type === "showAlert") { // アラートメッセージ表示
+      const msg = action.payload.message;
+      setState(prevState => ({
+        ...prevState,
+        alertMessage: msg,
+      }));
+    } else { // 未知のアクションタイプ
+      console.warn(`Unknown action type: ${action.type}`);
+    }
+  }, [state.box]);
+
+  // default handlers
+  const onBoxItemEditDialogClose = useCallback(() => { // ボックスアイテム編集ダイアログ閉
+    dispatch({ type: "editDialogClose"});
+  }, [dispatch]);
+
+  const onBoxItemDialogChange = useCallback((value: PokemonBoxItem) => { // ボックスアイテム編集・追加完了
+    dispatch({ type: "addOrEditDone", payload: { item: value }});    
+  }, [dispatch]);
+
+  const onPokemonIvChange = useCallback((iv: PokemonIv) => { // IV更新
+    dispatch({ type: "updateIv", payload: { iv }});
+  }, [dispatch]);
+
+  const onBoxExportDialogClose = useCallback(() => { // ボックスエクスポート閉
+    dispatch({type: "exportClose"});
+  }, [dispatch]);
+  
+  const onBoxImportDialogClose = useCallback(() => { // ボックスインポート閉
+    dispatch({type: "importClose"});
+  }, [dispatch]);
+
+  const onBoxDeleteAllDialogClose = useCallback(() => { // ボックス全削除閉
+    dispatch({type: "deleteAllClose"});
+  }, [dispatch]);
+
+  const onAlertMessageClose = useCallback(() => { // アラートメッセージ閉
+    dispatch({type: "closeAlert"});
+  }, [dispatch]);
+
+  const onRestoreClick = useCallback(() => { // 選択中アイテムをIV状態に復元
+    dispatch({type: "restoreItem"});
+  }, [dispatch]);
+
+  const onSaveClick = useCallback(() => { // 選択中アイテムにIV状態を保存
+    dispatch({type: "saveItem"});
+  }, [dispatch]);
+
+  // PartyCalcApp: パーティ全体の管理ハンドラ
+  const handleSwitchTeam = useCallback((idx: number) => {
+    setCurrentTeamIndex(idx);
+    localStorage.setItem('PstCurrentTeamIndex', idx.toString());
+
+    React.startTransition(() => {
+      setStrengthTabValue(0);
+      setTeamItemViewIdx(null);
+    });
+  }, []);
+
+  const handleClearAll = useCallback(() => {
+    const currentTeamIndex = currentIndexRef.current;
+    if (window.confirm(`パーティ ${currentTeamIndex + 1} をリセットしますか？`)) {
+      setAllTeams(prevAllTeams => {
+        const newAllTeams = prevAllTeams.map((team, tIdx) => {
+          if (tIdx !== currentTeamIndex) return team;
+          return [[null, false], [null, false], [null, false], [null, false], [null, false]] as [(string | null), boolean][];
+        });
+        localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
+        return newAllTeams;
+      });
+    }
+  }, []);
+
+  const handleStrengthTabChange = useCallback(() => {
+    setStrengthTabValue(0);
+    setTeamItemViewIdx(null);
+  }, []); 
+
+
+  // PartyMemberSlot: チームメンバー編集・表示・削除ハンドラ
   const handleEditTeamMember = useCallback((idx: number) => {
     setTeamItemEditIdx(idx);
 
@@ -538,41 +577,26 @@ export default function PartyCalcApp() {
     setStrengthTabValue(1);
   }, []);
 
-  const onBoxItemEditDialogClose = useCallback(() => {
-    dispatch({ type: "editDialogClose"});
-  }, [dispatch]);
+  const handleSwitchTouchFlag = useCallback((idx: number) => {
+    if (idx === null) return;
+    const currentTeamIndex = currentIndexRef.current;
 
-  const onBoxItemDialogChange = useCallback((value: PokemonBoxItem) => {
-    dispatch({ type: "addOrEditDone", payload: { item: value }});    
-  }, [dispatch]);
+    setAllTeams(prevAllTeams => {
+      const newAllTeams = prevAllTeams.map((team, tIdx) => {
+        if (tIdx !== currentTeamIndex) return team;
 
-  const onPokemonIvChange = useCallback((iv: PokemonIv) => {
-    dispatch({ type: "updateIv", payload: { iv }});
-  }, [dispatch]);
+        return team.map((member, mIdx) => {
+          if (mIdx !== idx || !member) return member;
+          // member[1] (flag) を反転させた新しいペアを返す
+          return [member[0], !member[1]] as [string | null, boolean];
+        });
+      });
 
-  const onBoxExportDialogClose = useCallback(() => {
-    dispatch({type: "exportClose"});
-  }, [dispatch]);
-  
-  const onBoxImportDialogClose = useCallback(() => {
-    dispatch({type: "importClose"});
-  }, [dispatch]);
-
-  const onBoxDeleteAllDialogClose = useCallback(() => {
-    dispatch({type: "deleteAllClose"});
-  }, [dispatch]);
-
-  const onAlertMessageClose = useCallback(() => {
-    dispatch({type: "closeAlert"});
-  }, [dispatch]);
-
-  const onRestoreClick = useCallback(() => {
-    dispatch({type: "restoreItem"});
-  }, [dispatch]);
-
-  const onSaveClick = useCallback(() => {
-    dispatch({type: "saveItem"});
-  }, [dispatch]);
+      // ローカルストレージへの保存
+      localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
+      return newAllTeams;
+    });
+  }, []);
 
   const handleReplayMember = useCallback((idx: number) => {
     if (teamData[idx] === null) return;
@@ -583,10 +607,42 @@ export default function PartyCalcApp() {
     );
     if (!originalBoxItem) return;
     const fullSerial = originalBoxItem.serialize();
-    allTeams[currentTeamIndex][idx] = `${fullSerial}`;
-    const newAllTeams = [...allTeams];
-    saveTeams(newAllTeams);
-  }, [allTeams, teamData, currentTeamIndex, state.box]);
+    const currentTeamIndex = currentIndexRef.current;
+
+    setAllTeams(prevAllTeams => {
+      const newAllTeams = prevAllTeams.map((team, tIdx) => {
+        if (tIdx !== currentTeamIndex) return team;
+        return team.map((member, mIdx) => {
+          if (mIdx !== idx) return member;
+          return [fullSerial, member[1]] as [string | null, boolean];
+        });
+      });
+      localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
+      return newAllTeams;
+    });
+  }, [teamData, state.box]);
+
+  const handleRemoveTeamMember = useCallback((idx: number) => {
+    const currentTeamIndex = currentIndexRef.current;
+    setAllTeams(prevAllTeams => {
+      const newAllTeams = prevAllTeams.map((team, tIdx) => {
+        if (tIdx !== currentTeamIndex) return team;
+        return team.map((member, mIdx) => {
+          if (mIdx !== idx) return member;
+          return [null, false] as [string | null, boolean];
+        });
+      });
+      localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
+      return newAllTeams;
+    });
+
+    setStrengthTabValue(0);
+    setTeamItemViewIdx(prevIdx => {
+      if (prevIdx === idx) return null;
+      return prevIdx;
+    });
+  }, []);
+  
 
   const viewMemberIV = state.lowerTabIndex === 0 ? state.pokemonIv : ((teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].iv : defaultIV);
   const viewMemberParam = state.lowerTabIndex === 0 ? state.parameter : ((teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].param : state.parameter);
@@ -635,7 +691,7 @@ export default function PartyCalcApp() {
         <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
           {teamData.map((data, idx) => (
             <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
-              <PartyMemberSlot member={data} onRemove={() => handleRemoveTeamMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} infoFlag={idx === teamItemViewIdx} />
+              <PartyMemberSlot member={data} onRemove={() => handleRemoveTeamMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} onTouch={() => handleSwitchTouchFlag(idx)} infoFlag={idx === teamItemViewIdx} />
             </Box>
           ))}
         </Box>

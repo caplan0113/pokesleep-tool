@@ -11,18 +11,20 @@ import { useTranslation } from 'react-i18next'; // インポートは残して�
 import { formatWithComma } from '../../util/NumberUtil';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ReplayIcon from '@mui/icons-material/Replay';
+import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
 import { memo } from 'react';
 
 interface PartyMemberSlotProps {
-  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null , param: StrengthParameter, editFlag: boolean, isReplayhed: boolean, isEvoluved: boolean} | null;
+  member: { iv: PokemonIv; nickname: string; result: StrengthResult, skillStrength: number, skillIngTotal: Record<string, number> | null , param: StrengthParameter, editFlag: boolean, isReplayhed: boolean, isEvoluved: boolean, dTouchFlag: boolean} | null;
   onRemove: () => void;
   onEdit: () => void;
   onView: () => void;
   onReplay: () => void;
+  onTouch: () => void;
   infoFlag: boolean;
 }
 
-const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, infoFlag }: PartyMemberSlotProps) => {
+const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, onTouch, infoFlag }: PartyMemberSlotProps) => {
   // エラー回避のため、使用していない場合は取得しないか、削除します
   const { t } = useTranslation(); 
 
@@ -45,7 +47,7 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, info
     );
   }
 
-  const { iv, nickname, result, skillStrength, param, editFlag, isReplayhed, isEvoluved } = member;
+  const { iv, nickname, result, skillStrength, param, editFlag, isReplayhed, isEvoluved, dTouchFlag } = member;
   const nickname_ = (nickname || t(`pokemons.${iv.pokemonName}`)) + (isEvoluved ? " ★" : "");
 
   return (
@@ -74,6 +76,13 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, info
         sx={{ position: 'absolute', top: 0, left: 18, p: 0.2 }}
       >
         <InfoOutlinedIcon sx={{ fontSize: 18, color: (infoFlag ? '#29ce10ff' : 'inherit')}} />
+      </IconButton>
+      <IconButton
+        size="small"
+        onClick={onTouch}
+        sx={{ position: 'absolute', top: 0, left: 36, p: 0.2 }}
+      >
+        <DoNotTouchIcon sx={{ fontSize: 18, color: (dTouchFlag ? '#29ce10ff' : 'inherit') }} />
       </IconButton>
 
       <IconButton 
@@ -117,7 +126,7 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, info
 
       {/* 食材表示（アイコンサイズ固定 16px） */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '2px', mt: 0.5 }}>
-        {result.ingredients.map((ing, idx) => (
+        {result.ingredients.filter(ing => ing.count > 0).map((ing, idx) => (
           <Box key={idx} sx={{ display: 'flex', alignItems: 'center' }}>
             <Box sx={{ 
               width: 16, 
