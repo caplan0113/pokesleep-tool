@@ -109,38 +109,42 @@ const HelperSkillDialog = ({ open, onClose, skillName, skillStrength, result, sk
                         スキル1回あたりの食材数
                     </Typography>
                     <Box sx={{ bgcolor: '#f5f5f5', px: 2, py: 1, borderRadius: '16px'}}>
-                        {skillInfo.value.filter(info => info !== null && !info.flag).map((info, idx) => (
-                            <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start', mb: 1.5, '&:last-child': { mb: 0 } }}>
-                                <Typography sx={{ width: 120, fontSize: '0.85rem', mt: '6px', color: 'text.secondary' }}>
-                                    {info!.name} ：
-                                </Typography>
-                                <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                    {info!.result?.ingredients && Object.entries(info!.result.ingredients).map(([name, ing]) => (
-                                        <Box key={name} sx={{ display: 'flex', alignItems: 'center', height: '28px' }}>
-                                            <Box sx={{ 
-                                                display: 'flex', alignItems: 'center', bgcolor: 'white', 
-                                                pl: 0.5, pr: 1.5, height: '28px', borderRadius: '14px', border: '1px solid #eee', mr: 2
-                                            }}>
-                                                <Box sx={{ width: 20, height: 20, mr: 1, display: 'flex', alignItems: 'center' }}>
-                                                    <IngredientIcon name={ing.name} />
+                        {skillInfo.value.map((info, idx) => {
+                            if (!info || info.flag) return <></>;
+                            return (
+                                <Box key={idx} sx={{ display: 'flex', alignItems: 'flex-start', mb: 1.5, '&:last-child': { mb: 0 } }}>
+                                    <Typography sx={{ width: 120, fontSize: '0.85rem', mt: '6px', color: 'text.secondary' }}>
+                                        {info!.name} ：
+                                    </Typography>
+                                    <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                        {info!.result?.ingredients && Object.entries(info!.result.ingredients).map(([name, ing]) => (
+                                            <Box key={name} sx={{ display: 'flex', alignItems: 'center', height: '28px' }}>
+                                                <Box sx={{ 
+                                                    display: 'flex', alignItems: 'center', bgcolor: 'white', 
+                                                    pl: 0.5, pr: 1.5, height: '28px', borderRadius: '14px', border: '1px solid #eee', mr: 2
+                                                }}>
+                                                    <Box sx={{ width: 20, height: 20, mr: 1, display: 'flex', alignItems: 'center' }}>
+                                                        <IngredientIcon name={ing.name} />
+                                                    </Box>
+                                                    <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.9rem', lineHeight: 1 }}>
+                                                        {(ing.count * multiplier).toFixed(1)}
+                                                    </Typography>
                                                 </Box>
-                                                <Typography variant="body2" sx={{ fontWeight: 'bold', fontSize: '0.9rem', lineHeight: 1 }}>
-                                                    {(ing.count * multiplier).toFixed(1)}
+                                                <Typography sx={{ color: 'text.disabled', fontSize: '0.75rem' }}>
+                                                    ({ing.count.toFixed(1)} × {round2(multiplier)})
                                                 </Typography>
                                             </Box>
-                                            <Typography sx={{ color: 'text.disabled', fontSize: '0.75rem' }}>
-                                                ({ing.count.toFixed(1)} × {round2(multiplier)})
-                                            </Typography>
-                                        </Box>
-                                    ))}
+                                        ))}
+                                    </Box>
+
+                                    {info!.result && (
+                                        <IconButton size="small" onClick={() => onIngHelpClick(idx)} sx={{ ml: 'auto', mt: 0.5, p: 0.5 }}>
+                                            <InfoOutlinedIcon sx={{ fontSize: 16 }} />
+                                        </IconButton>
+                                    )}
                                 </Box>
-                                {info!.result && (
-                                    <IconButton size="small" onClick={() => onIngHelpClick(idx)} sx={{ ml: 'auto', mt: 0.5, p: 0.5 }}>
-                                        <InfoOutlinedIcon sx={{ fontSize: 16 }} />
-                                    </IconButton>
-                                )}
-                            </Box>
-                        ))}
+                            );
+                        })}
                     </Box>
                 </Box>
 
