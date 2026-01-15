@@ -78,7 +78,8 @@ const HelperSkillDialog = ({ open, onClose, skillName, skillStrength, result, sk
                     
                     {/* カード自体の左右に mx: 1 で余白を設定 */}
                     <Box sx={{ bgcolor: '#f5f5f5', px: 2, py: 1, borderRadius: '16px'}}>
-                        {skillInfo.value.filter(info => info !== null && !info.flag).map((info, idx) => {
+                        {skillInfo.value.map((info, idx) => {
+                            if (!info || info.flag) return <></>;
                             const berryBase = info!.result?.berryTotalStrength || 0;
                             return (
                                 <Box key={idx} sx={{ display: 'flex', alignItems: 'center', mb: 1, '&:last-child': { mb: 0 } }}>
