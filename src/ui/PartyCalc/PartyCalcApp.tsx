@@ -656,60 +656,61 @@ export default function PartyCalcApp() {
   
   return (
     <div>
-    <Box sx={{ p: 2, pb: 1 }}>
-      {strengthTabValue === 0 && state.lowerTabIndex !== 0 ?(
-        <TeamSummary teamData={teamData} pokemonIv={state.pokemonIv} settings={state.parameter} energyDialogOpen={state.energyDialogOpen} dispatch={dispatch} />
-        ) : (
-          <Paper sx={{ p: 2, bgcolor: '#fdfdfd', borderRadius: 2 }}>
-            <StrengthBerryIngSkillView pokemonIv={viewMemberIV} settings={viewMemberParam} energyDialogOpen={state.energyDialogOpen} dispatch={dispatch} />
-          </Paper>
-        )
-      }
+      <Box sx={{ p: 2, pb: 1 }}>
+        {strengthTabValue === 0 && state.lowerTabIndex !== 0 ?(
+          <TeamSummary teamData={teamData} pokemonIv={state.pokemonIv} settings={state.parameter} energyDialogOpen={state.energyDialogOpen} dispatch={dispatch} />
+          ) : (
+            <Paper sx={{ p: 2, bgcolor: '#fdfdfd', borderRadius: 2 }}>
+              <StrengthBerryIngSkillView pokemonIv={viewMemberIV} settings={viewMemberParam} energyDialogOpen={state.energyDialogOpen} dispatch={dispatch} />
+            </Paper>
+          )
+        }
 
-      <Box sx={{zIndex: 100, position: 'sticky', top: 0, bgcolor: '#fdfdfd', pt: 1, pb: 0, mt: 1, borderBottom: '1px solid #ddd', display: state.lowerTabIndex !== 0 ? 'block' : 'none' }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1}}>
-          <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成 {currentTeamIndex + 1}
-            <IconButton 
-                size="small" 
-                onClick={handleStrengthTabChange} 
-                sx={{ position: 'relative', top: -2.5, left: 5, p: 0.2,  }}
-              >
-              <InfoOutlinedIcon sx={{ fontSize: 24, color: (strengthTabValue === 0 ? '#29ce10ff' : 'inherit')}} />
-            </IconButton>
-          </Typography>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-            {[0, 1, 2, 3, 4].map((idx) => (
-              <Button
-                key={idx}
-                size="small"
-                variant={currentTeamIndex === idx ? "contained" : "outlined"}
-                onClick={() => handleSwitchTeam(idx)}
-                sx={{ minWidth: 40, p: 0.3
-                }}
-              >
-                {idx + 1}
-              </Button>
+        <Box sx={{zIndex: 100, position: 'sticky', top: 0, bgcolor: '#fdfdfd', pt: 1, pb: 0, mt: 1, borderBottom: '1px solid #ddd', display: state.lowerTabIndex !== 0 ? 'block' : 'none' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1}}>
+            <Typography variant="h6" sx={{ fontWeight: 'bold' }}>パーティ編成 {currentTeamIndex + 1}
+              <IconButton 
+                  size="small" 
+                  onClick={handleStrengthTabChange} 
+                  sx={{ position: 'relative', top: -2.5, left: 5, p: 0.2,  }}
+                >
+                <InfoOutlinedIcon sx={{ fontSize: 24, color: (strengthTabValue === 0 ? '#29ce10ff' : 'inherit')}} />
+              </IconButton>
+            </Typography>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              {[0, 1, 2, 3, 4].map((idx) => (
+                <Button
+                  key={idx}
+                  size="small"
+                  variant={currentTeamIndex === idx ? "contained" : "outlined"}
+                  onClick={() => handleSwitchTeam(idx)}
+                  sx={{ minWidth: 40, p: 0.3
+                  }}
+                >
+                  {idx + 1}
+                </Button>
+              ))}
+            </Box>
+            <Button size="small" variant="text" color="error" onClick={handleClearAll}>このセットを解除</Button>
+          </Box>
+
+          <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
+            {teamData.map((data, idx) => (
+              <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
+                <PartyMemberSlot member={data} onRemove={() => handleRemoveTeamMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} onTouch={() => handleSwitchTouchFlag(idx)} infoFlag={idx === teamItemViewIdx} />
+              </Box>
             ))}
           </Box>
-          <Button size="small" variant="text" color="error" onClick={handleClearAll}>このセットを解除</Button>
         </Box>
 
-        <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
-          {teamData.map((data, idx) => (
-            <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
-              <PartyMemberSlot member={data} onRemove={() => handleRemoveTeamMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} onTouch={() => handleSwitchTouchFlag(idx)} infoFlag={idx === teamItemViewIdx} />
-            </Box>
-          ))}
-        </Box>
+        {state.lowerTabIndex !== 2 ? (
+          <Box sx={{ px: 0, pt: 1}}>
+            <StrengthParameterSummary state={state} dispatch={dispatch} />
+          </Box>
+        ) : (<></>)}
+        
+        <LowerTabHeader state={state} dispatch={dispatch} isBoxEmpty={state.box.items.length === 0}/>
       </Box>
-
-      {state.lowerTabIndex !== 2 ? (
-        <Box sx={{ px: 0, pt: 1}}>
-          <StrengthParameterSummary state={state} dispatch={dispatch} />
-        </Box>
-      ) : (<></>)}
-      <LowerTabHeader state={state} dispatch={dispatch} isBoxEmpty={state.box.items.length === 0}/>
-    </Box>
 
       <div style={{margin: '0 0.5rem 10rem 0.5rem', display: state.lowerTabIndex === 0 ? 'block' : 'none' }}>
           <IvForm pokemonIv={state.pokemonIv} onChange={onPokemonIvChange}/>
@@ -733,18 +734,22 @@ export default function PartyCalcApp() {
         onClose={onBoxItemEditDialogClose} onChange={onBoxItemDialogChange}
       />
       <BoxExportDialog box={state.box}
-          open={state.boxExportDialogOpen} onClose={onBoxExportDialogClose}/>
+        open={state.boxExportDialogOpen} onClose={onBoxExportDialogClose}
+      />
       <BoxImportDialog box={state.box}
-          open={state.boxImportDialogOpen} onClose={onBoxImportDialogClose}/>
+        open={state.boxImportDialogOpen} onClose={onBoxImportDialogClose}
+      />
       <BoxDeleteAllDialog box={state.box}
-          open={state.boxDeleteAllDialogOpen} onClose={onBoxDeleteAllDialogClose}/>
+        open={state.boxDeleteAllDialogOpen} onClose={onBoxDeleteAllDialogClose}
+      />
       <Snackbar open={state.alertMessage !== ""} message={t(state.alertMessage)}
-          autoHideDuration={2000} onClose={onAlertMessageClose}/>
+        autoHideDuration={2000} onClose={onAlertMessageClose}
+      />
       <Snackbar open={isSelectedItemEdited} message={t('pokemon in the box is edited')}
-          action={<>
-              <Button onClick={onRestoreClick}>{t('reset')}</Button>
-              <Button onClick={onSaveClick}>{t('save')}</Button>
-          </>}/>
-    </div>
-  );
+        action={<>
+            <Button onClick={onRestoreClick}>{t('reset')}</Button>
+            <Button onClick={onSaveClick}>{t('save')}</Button>
+        </>}
+      />
+  </div>);
 }
