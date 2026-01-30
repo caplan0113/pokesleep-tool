@@ -641,10 +641,12 @@ export default function PartyCalcApp() {
       localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
       return newAllTeams;
     });
-
-    setStrengthTabValue(0);
+    
     setTeamItemViewIdx(prevIdx => {
-      if (prevIdx === idx) return null;
+      if (prevIdx === idx) {
+        setStrengthTabValue(0);
+        return null;
+      }
       return prevIdx;
     });
   }, []);
