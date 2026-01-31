@@ -376,7 +376,7 @@ export default function PartyCalcApp() {
               if (tIdx !== currentTeamIndex) return team;
               return team.map((item, iIdx) => {
                 if (iIdx !== teamItemEditIdx) return item;
-                return [fullSerial, false] as [(string | null), boolean];
+                return [fullSerial, team[iIdx][1]] as [(string | null), boolean];
               });
             });
             localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
