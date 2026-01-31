@@ -300,6 +300,7 @@ export default function PartyCalcApp() {
           localStorage.setItem('PstPartySelectionGroups', JSON.stringify(newAllTeams));
           return newAllTeams;
         });
+        setStrengthTabValue(0);
       } else { // 通常選択モードの場合
         setState(prevState => {
           const newState = {
@@ -309,7 +310,9 @@ export default function PartyCalcApp() {
           saveIvStateCache(newState);
           return newState;
         });
+        setStrengthTabValue(1);
       } 
+      setTeamItemViewIdx(null);
     } else if (action.type === "updateIv") { // IV更新
       const iv = action.payload.iv;
       setState(prevState => {
@@ -652,7 +655,7 @@ export default function PartyCalcApp() {
   }, []);
   
 
-  const viewMemberIV = state.lowerTabIndex === 0 ? state.pokemonIv : ((teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].iv : defaultIV);
+  const viewMemberIV = (teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].iv : state.pokemonIv;
   const viewMemberParam = state.lowerTabIndex === 0 ? state.parameter : ((teamItemViewIdx !== null && teamData[teamItemViewIdx] !== null) ? teamData[teamItemViewIdx].param : state.parameter);
   const isSelectedItemEdited = state.selectedItemId !== -1 && state.lowerTabIndex === 0 && state.box.getById(state.selectedItemId)?.iv.isEqual(state.pokemonIv) === false;
   
