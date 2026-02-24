@@ -88,6 +88,25 @@ export default function PartyCalcApp() {
     selectedIdRef.current = state.selectedItemId;
   }, [state.selectedItemId]);
 
+  // コンポーネントマウント時に最上部へスクロール
+  React.useEffect(() => {
+    // ブラウザのスクロール位置復元を待つために少しだけ遅延させるか、
+    // あるいは即座に実行します。
+    window.scrollTo(0, 0);
+    
+    // もしこれでも直らない場合は、ブラウザの自動復元を無効化する設定を併用します
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual';
+    }
+
+    // クリーンアップ関数で戻しておく（任意）
+    return () => {
+      if ('scrollRestoration' in history) {
+        history.scrollRestoration = 'auto';
+      }
+    };
+  }, []);
+
   const teamData = useMemo(() => {
     if (editBoxItemFlag) {
       setEditBoxItemFlag(false);
