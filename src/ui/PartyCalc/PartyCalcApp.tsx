@@ -737,7 +737,7 @@ export default function PartyCalcApp() {
       </Box>
 
       <div style={{margin: '0 0.5rem 10rem 0.5rem', display: state.lowerTabIndex === 0 ? 'block' : 'none' }}>
-          <IvForm pokemonIv={state.pokemonIv} onChange={onPokemonIvChange}/>
+          <IvForm parameter={state.parameter} pokemonIv={state.pokemonIv} onChange={onPokemonIvChange} dispatch={dispatch}/>
       </div>
       <div style={{display: state.lowerTabIndex === 1 ? 'block' : 'none'}}>
         <BoxView items={state.box.items} iv={state.pokemonIv} selectedId={state.selectedItemId} dispatch={dispatch} parameter={state.parameter} />
@@ -754,8 +754,8 @@ export default function PartyCalcApp() {
 
       <BoxItemDialog
         open={boxItemDialogOpen} boxItem={editBoxItem}
-        isEdit={isEditBoxItem}
-        onClose={onBoxItemEditDialogClose} onChange={onBoxItemDialogChange}
+        isEdit={isEditBoxItem} parameter={state.parameter}
+        onClose={onBoxItemEditDialogClose} onChange={onBoxItemDialogChange} dispatch={dispatch}
       />
       <BoxExportDialog box={state.box}
         open={state.boxExportDialogOpen} onClose={onBoxExportDialogClose}
