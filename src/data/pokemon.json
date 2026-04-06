@@ -652,7 +652,7 @@
         "name": "Raichu",
         "arrival": "2023-07-17",
         "sleepType": "snoozing",
-        "exp": 600,
+        "exp": 1080,
         "type": "electric",
         "specialty": "Berries",
         "skill": "Charge Strength S",
@@ -1963,7 +1963,7 @@
         "fp": 16,
         "frequency": 2650,
         "ingRate": 22.2,
-        "skillRate": 1.7,
+        "skillRate": 3.2,
         "ancestor": null,
         "evolutionCount": -1,
         "evolutionLeft": 0,
@@ -4907,7 +4907,7 @@
         "exp": 600,
         "type": "dark",
         "specialty": "Ingredients",
-        "skill": "Charge Strength S",
+        "skill": "Charge Strength M",
         "fp": 16,
         "frequency": 2950,
         "ingRate": 17.8,
@@ -5204,6 +5204,40 @@
         "ing3": {
             "name": "sausage",
             "c3": 4
+        }
+    },
+    {
+        "id": 380,
+        "name": "Latias",
+        "arrival": "2026-04-06",
+        "sleepType": "dozing",
+        "exp": 900,
+        "type": "dragon",
+        "specialty": "Skills",
+        "skill": "Energizing Cheer S (Heal Pulse)",
+        "fp": 20,
+        "frequency": 0,
+        "ingRate": 0,
+        "skillRate": 0,
+        "ancestor": null,
+        "evolutionCount": -1,
+        "evolutionLeft": 0,
+        "isFullyEvolved": true,
+        "carryLimit": 0,
+        "ing1": {
+            "name": "unknown1",
+            "c1": 1,
+            "c2": 2,
+            "c3": 4
+        },
+        "ing2": {
+            "name": "unknown2",
+            "c2": 0,
+            "c3": 0
+        },
+        "ing3": {
+            "name": "unknown3",
+            "c3": 0
         }
     },
     {
@@ -6573,40 +6607,6 @@
         "form": "Jumbo"
     },
     {
-        "id": 736,
-        "name": "Grubbin",
-        "arrival": "2024-10-02",
-        "sleepType": "dozing",
-        "exp": 600,
-        "type": "bug",
-        "specialty": "Ingredients",
-        "skill": "Charge Strength S",
-        "fp": 5,
-        "frequency": 4600,
-        "ingRate": 15.5,
-        "skillRate": 2.9,
-        "ancestor": 736,
-        "evolutionCount": 0,
-        "evolutionLeft": 2,
-        "isFullyEvolved": false,
-        "carryLimit": 11,
-        "ing1": {
-            "name": "coffee",
-            "c1": 2,
-            "c2": 5,
-            "c3": 7
-        },
-        "ing2": {
-            "name": "mushroom",
-            "c2": 4,
-            "c3": 7
-        },
-        "ing3": {
-            "name": "honey",
-            "c3": 11
-        }
-    },
-    {
         "id": 714,
         "name": "Noibat",
         "arrival": "2026-03-23",
@@ -6672,6 +6672,40 @@
         "ing3": {
             "name": "sausage",
             "c3": 3
+        }
+    },
+    {
+        "id": 736,
+        "name": "Grubbin",
+        "arrival": "2024-10-02",
+        "sleepType": "dozing",
+        "exp": 600,
+        "type": "bug",
+        "specialty": "Ingredients",
+        "skill": "Charge Strength S",
+        "fp": 5,
+        "frequency": 4600,
+        "ingRate": 15.5,
+        "skillRate": 2.9,
+        "ancestor": 736,
+        "evolutionCount": 0,
+        "evolutionLeft": 2,
+        "isFullyEvolved": false,
+        "carryLimit": 11,
+        "ing1": {
+            "name": "coffee",
+            "c1": 2,
+            "c2": 5,
+            "c3": 7
+        },
+        "ing2": {
+            "name": "mushroom",
+            "c2": 4,
+            "c3": 7
+        },
+        "ing3": {
+            "name": "honey",
+            "c3": 11
         }
     },
     {
