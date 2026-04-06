@@ -15,6 +15,10 @@
             "notice detail1": "미래의 SP와 벌어들이는 에너지를 확인하고, 육성 계획에 활용하세요!",
             "notice detail2": "또한, 사용 방법 설명 동영상을 <YouTube>YouTube 채널</YouTube>에서 공개하고 있습니다. 꼭 확인해주세요.",
             "news": {
+                "add latias": {
+                    "headline": "$t(pokemons.Latias)의 데이터를 추가했습니다.",
+                    "detail": "$t(rp collection)"
+                },
                 "v3.4.0": {
                     "headline": "v3.4.0의 밸런스 조정에 대응하였습니다.",
                     "detail": "$t(own research note)"
@@ -679,9 +683,9 @@
             "Charge Strength M": "",
             "Charge Strength M (Bad Dreams)": "$t(types.dark) 타입이 아닌 포켓몬에게 적용되는 $t(energy) 감소 효과 (-12)는 $t(strength) 평가에 포함되지 않았습니다.",
             "Dream Shard Magnet S": "",
-            "Energizing Cheer S": "이 값은 총 강도량에 포함되지 않습니다.",
+            "Energizing Cheer S": "스킬에 의한 활력 회복은 총 강도량에 포함되지 않습니다.",
             "Energizing Cheer S (Nuzzle)": "$t(strength skill info.Energizing Cheer S)",
-            "Energizing Cheer S (Heal Pulse)": "$t(strength skill info.Energizing Cheer S)",
+            "Energizing Cheer S (Heal Pulse)": "$t(strength skill info.Energizing Cheer S) 추가 효과는 $t(strength skill info.Extra Helpful S)",
             "Metronome": "$t(strength skill info.Skill Copy)",
             "Energy for Everyone S": "강도량에 대한 영향을 추정하려면 [$t(energy)] 값을 변경하십시오.",
             "Energy for Everyone S (Lunar Blessing)": "$t(strength skill info.Energy for Everyone S)",

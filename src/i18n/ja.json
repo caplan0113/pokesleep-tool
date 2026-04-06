@@ -20,6 +20,10 @@
             "notice detail1": "将来の SP やエナジーを確認して、育成の計画に役立ててください！",
             "notice detail2": "また、使い方の解説動画を <YouTube>YouTubeチャンネル</YouTube> で公開しています。ぜひご確認ください。",
             "news": {
+                "add latias": {
+                    "headline": "$t(pokemons.Latias)のデータを追加しました。",
+                    "detail": "$t(rp collection)"
+                },
                 "v3.4.0": {
                     "headline": "v3.4.0 でのバランス調整に対応しました。",
                     "detail": "$t(own research note)"
@@ -689,9 +693,9 @@
             "Charge Strength M": "",
             "Charge Strength M (Bad Dreams)": "$t(types.dark)タイプ以外のポケモンに対する$t(energy)の減少効果 (-12) については、$t(strength)の評価に含めていません。",
             "Dream Shard Magnet S": "",
-            "Energizing Cheer S": "スキルの効果は、合計エナジー量には換算していません。",
+            "Energizing Cheer S": "スキルによるげんき回復は、合計エナジー量には換算していません。",
             "Energizing Cheer S (Nuzzle)": "$t(strength skill info.Energizing Cheer S)",
-            "Energizing Cheer S (Heal Pulse)": "$t(strength skill info.Energizing Cheer S)",
+            "Energizing Cheer S (Heal Pulse)": "$t(strength skill info.Energizing Cheer S)追加効果は、$t(strength skill info.Extra Helpful S)",
             "Metronome": "$t(strength skill info.Skill Copy)",
             "Energy for Everyone S": "回復によるエナジー量への影響を見積もるには、[$t(energy)] の設定を変更して確認してください。",
             "Energy for Everyone S (Lunar Blessing)": "$t(strength skill info.Energy for Everyone S)",
