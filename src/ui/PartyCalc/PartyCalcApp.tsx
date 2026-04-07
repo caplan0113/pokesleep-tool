@@ -229,7 +229,23 @@ export default function PartyCalcApp() {
         });
 
         skillInfo = {value: preCalculatedBaseStats, baseValue: pokeStrengthCal.skillValuePerTrigger/validMembers.length};
-      } else if (!["Ingredient Magnet S", "Cooking Power-Up S", "Ingredient Draw S"].some(s => skillName.includes(s))) {
+      } else if (skillName.includes("Energizing Cheer S (Heal Pulse)")) {
+        const ratio = pokeStrengthCal.skillValue2 / validMembers.length * Math.min(2, validMembers.length);
+        
+        skillStrength = ratio * teamStrengthPerHelpBerryTotal;
+        console.log("skillStrength", skillStrength, ratio, teamStrengthPerHelpBerryTotal);
+        
+        skillIngTotal = {};
+        preCalculatedBaseStats.forEach(stat => {
+          if (stat === null || stat.flag) return;
+          stat?.result?.ingredients.forEach(ing => {
+            if (ing.name === "unknown") return;
+            skillIngTotal![ing.name] = (skillIngTotal![ing.name] || 0) + (ing.count * ratio);
+          });
+        });
+
+        skillInfo = {value: preCalculatedBaseStats, baseValue: pokeStrengthCal.skillValuePerTrigger2/validMembers.length * Math.min(2, validMembers.length)};
+      } else if (!["Ingredient Magnet S", "Cooking Power-Up S", "Ingredient Draw S", "Cooking Assist S"].some(s => skillName.includes(s))) {
         skillStrength = pokeStrengthCal.skillStrength + pokeStrengthCal.skillStrength2;
       }
 
