@@ -15,6 +15,10 @@
             "notice detail1": "用來確認将来的 SP 和能量、有助於制定養成計劃！",
             "notice detail2": "此外，我們在 <YouTube>YouTube 頻道</YouTube> 上發佈了使用方法的講解影片。請務必觀看。",
             "news": {
+                "add sandshrew": {
+                    "headline": "新增了$t(pokemons.Sandshrew)和$t(pokemons.Sandslash)的資料，並更新了$t(pokemons.Togedemaru)的資料。支援了$t(pity proc)・$t(tap frequency)的模擬（<a href='https://youtu.be/kEX2myG-wS8'>講解影片</a>）。",
+                    "detail": "$t(rp collection)$t(movie detail)"
+                },
                 "add latias": {
                     "headline": "新增了$t(pokemons.Latias)的資料。",
                     "detail": "$t(rp collection)"
@@ -358,6 +362,7 @@
         "expert skill effect": "技能1.25倍",
 
         "none": "無",
+        "enabled": "啟用",
         "cresselia on your team": "隊伍中有克雷色利亞",
         "sleep twice": "分次睡眠",
         "total n pokemon": "合計<n/>只",
@@ -490,6 +495,19 @@
         "calc with evolved (short)": "進化后",
         "calc with max skill level": "根據最高技能等級計算",
         "calc with max skill level (short)": "最高技能等級",
+
+        "include pity proc": "考慮技能連續未發動保底",
+        "pity proc help": "寶可夢睡眠中有一個機制，當主技能連續一定次數以上未發動時，主技能會確定發動。",
+        "pity proc help2": "啟用此標誌後，將考慮技能連續未發動保底機制來計算主技能發動次數。",
+        "pity proc help3": "<name/>在最後一次技能發動後，若技能連續<count/>次未發動，則下一次第<count1/>次必定發動技能。",
+        "pity proc": "技能連續未發動保底",
+        "with pity proc": "有連續未發動保底",
+        "without pity proc": "無連續未發動保底",
+        "pity proc rate": "連續未發動保底到達率",
+        "time to pity proc": "距連續未發動保底的時間",
+        "pity proc ref": "$t(pity proc)的資訊參考自<raenonx>RaenonX的文章</raenonx>。",
+        "pity proc url": "https://pks.raenonx.cc/zh/docs/view/mechanics/skill-pity",
+
         "area bonus": "營地獎勵",
         "favorite berry": "喜歡的樹果",
         "helping bonus": "幫手獎勵",
@@ -609,6 +627,7 @@
         "help count": "幫忙次數",
         "berry help count": "樹果幫助次數",
         "ing help count": "食材幫助次數",
+        "inventory full lost": "持有溢出而丟棄",
         "ing count": "食材的數量",
         "strength per ing": "食材每個的能量",
         "normal help count": "普通幫助次數",

@@ -15,6 +15,10 @@
             "notice detail1": "可以确认将来的SP和能量，有助于制定养成的计划！",
             "notice detail2": "此外，我们在 <YouTube>YouTube 频道</YouTube> 上发布了使用方法的讲解视频。请务必观看。",
             "news": {
+                "add sandshrew": {
+                    "headline": "添加了$t(pokemons.Sandshrew)和$t(pokemons.Sandslash)的数据，并更新了$t(pokemons.Togedemaru)的数据。支持了$t(pity proc)・$t(tap frequency)的模拟（<a href='https://youtu.be/kEX2myG-wS8'>讲解视频</a>）。",
+                    "detail": "$t(rp collection)$t(movie detail)"
+                },
                 "add latias": {
                     "headline": "添加了$t(pokemons.Latias)的数据。",
                     "detail": "$t(rp collection)"
@@ -355,6 +359,7 @@
         "expert skill effect": "技能1.25倍",
 
         "none": "无",
+        "enabled": "启用",
         "cresselia on your team": "队伍中有克雷色利亚",
         "sleep twice": "分次睡眠",
         "total n pokemon": "合计<n/>只",
@@ -488,6 +493,19 @@
         "calc with evolved (short)": "进化",
         "calc with max skill level": "根据最高技能等级计算",
         "calc with max skill level (short)": "最高技能等级",
+
+        "include pity proc": "考虑技能连续未发动保底",
+        "pity proc help": "宝可梦睡眠中有一个机制，当主技能连续一定次数以上未发动时，主技能会确定发动。",
+        "pity proc help2": "启用此标志后，将考虑技能连续未发动保底机制来计算主技能发动次数。",
+        "pity proc help3": "<name/>在最后一次技能发动后，若技能连续<count/>次未发动，则下一次第<count1/>次必定发动技能。",
+        "pity proc": "技能连续未发动保底",
+        "with pity proc": "有连续未发动保底",
+        "without pity proc": "无连续未发动保底",
+        "pity proc rate": "连续未发动保底到达率",
+        "time to pity proc": "距连续未发动保底的时间",
+        "pity proc ref": "$t(pity proc)的信息参考自<raenonx>RaenonX的文章</raenonx>。",
+        "pity proc url": "https://pks.raenonx.cc/zh/docs/view/mechanics/skill-pity",
+
         "area bonus": "营地奖励",
         "favorite berry": "喜欢的树果",
         "helping bonus": "帮手奖励",
@@ -607,6 +625,7 @@
         "help count": "帮忙次数",
         "berry help count": "树果帮助次数",
         "ing help count": "食材帮助次数",
+        "inventory full lost": "持有溢出被丢弃",
         "ing count": "食材的数量",
         "strength per ing": "食材每个的能量",
         "normal help count": "普通帮助次数",
