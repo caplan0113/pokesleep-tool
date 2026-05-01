@@ -1,4 +1,4 @@
-import rawNews from './news.json';
+import rawNews from "./news.json";
 
 /**
  * Represents news liest.
@@ -38,31 +38,31 @@ class News {
  * Represents news article.
  */
 export class NewsArticle {
-    /** Date time */
-    date: Date;
-    /** News id (English) */
-    id: string;
+	/** Date time */
+	date: Date;
+	/** News id (English) */
+	id: string;
 
-    /**
-     * Initialize News object.
-     * @param data JSON data.
-     */
-    constructor(data: JsonNewsArticle) {
-        this.date = new Date(Date.parse(data.date));
-        this.id = data.id;
-    }
+	/**
+	 * Initialize News object.
+	 * @param data JSON data.
+	 */
+	constructor(data: JsonNewsArticle) {
+		this.date = new Date(Date.parse(data.date));
+		this.id = data.id;
+	}
 }
 
 interface JsonNewsArticle {
-    /** Date time */
-    date: string;
-    /** News id (English) */
-    id: string;
+	/** Date time */
+	date: string;
+	/** News id (English) */
+	id: string;
 }
 
 interface JsonNews {
-    ResearchCalc: JsonNewsArticle[],
-    IvCalc: JsonNewsArticle[],
+	ResearchCalc: JsonNewsArticle[];
+	IvCalc: JsonNewsArticle[];
 }
 
 //const news = new News(rawNews as JsonNews);

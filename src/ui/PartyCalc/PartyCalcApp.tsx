@@ -188,7 +188,8 @@ export default function PartyCalcApp() {
           members: berryBurstTeam,
           species: Math.max(teamSpecies[iv.pokemon.type]?.size || 1, 1)
         },
-        tapFrequency: (dTouchFlag ? "none" : state.parameter.tapFrequency),
+        tapFrequencyAsleep: (dTouchFlag ? 0 : state.parameter.tapFrequencyAsleep),
+        tapFrequencyAwake: (dTouchFlag ? 0 : state.parameter.tapFrequencyAwake),
       });
 
       const pokeStrength = new PokemonStrength(iv, currentCalcParams);
@@ -737,7 +738,7 @@ export default function PartyCalcApp() {
           <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
             {teamData.map((data, idx) => (
               <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
-                <PartyMemberSlot member={data} onRemove={() => handleRemoveTeamMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} onTouch={() => handleSwitchTouchFlag(idx)} infoFlag={idx === teamItemViewIdx} />
+                <PartyMemberSlot member={data} onRemove={() => handleRemoveTeamMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} onTouch={() => handleSwitchTouchFlag(idx)} infoFlag={idx === teamItemViewIdx} dispatch={dispatch} />
               </Box>
             ))}
           </Box>

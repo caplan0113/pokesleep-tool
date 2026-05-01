@@ -1,13 +1,12 @@
-import { defineConfig } from 'vite'
-import eslint from 'vite-plugin-eslint';
-import react from '@vitejs/plugin-react'
-import { configDefaults } from 'vitest/config'
-import path from 'path';
+import path from "node:path";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+import { configDefaults } from "vitest/config";
 
 export default defineConfig({
   // base: '/pokesleep-tool/',
   base: '/',
-  plugins: [eslint(), react()],
+  plugins: [react()],
   build: {
     rollupOptions: {
       input: {
@@ -68,27 +67,27 @@ export default defineConfig({
             return 'data';
           }
 
-          // Utility modules
-          if (id.includes('/src/util/')) {
-            return 'util';
-          }
+					// Utility modules
+					if (id.includes("/src/util/")) {
+						return "util";
+					}
 
-          // Common UI components (Dialog, common, etc.)
-          if (id.includes('/src/ui/')) {
-            return 'ui';
-          }
+					// Common UI components (Dialog, common, etc.)
+					if (id.includes("/src/ui/")) {
+						return "ui";
+					}
 
-          return undefined;
-        }
-      }
-    },
-  },
-  server: {
-    open: true,
-  },
-  test: {
-    globals: true,
-    environment: 'jsdom',
-    exclude: [...configDefaults.exclude],
-  },
-})
+					return undefined;
+				},
+			},
+		},
+	},
+	server: {
+		open: true,
+	},
+	test: {
+		globals: true,
+		environment: "jsdom",
+		exclude: [...configDefaults.exclude],
+	},
+});

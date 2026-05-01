@@ -15,6 +15,7 @@ import DoNotTouchIcon from '@mui/icons-material/DoNotTouch';
 import { memo } from 'react';
 import HelperSkillDialog from './HelperSkillDialog';
 import SavedSearchIcon from '@mui/icons-material/SavedSearch';
+import { IvAction } from '../IvCalc/IvState';
 
 interface PartyMemberSlotProps {
   member: { 
@@ -43,9 +44,10 @@ interface PartyMemberSlotProps {
   onReplay: () => void;
   onTouch: () => void;
   infoFlag: boolean;
+  dispatch: React.Dispatch<IvAction>;
 }
 
-const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, onTouch, infoFlag }: PartyMemberSlotProps) => {
+const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, onTouch, infoFlag, dispatch }: PartyMemberSlotProps) => {
   // エラー回避のため、使用していない場合は取得しないか、削除します
   const { t } = useTranslation(); 
 
@@ -205,6 +207,7 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, onTo
       skillStrength={skillStrength}
       result={result}
       skillInfo={skillInfo}
+      dispatch={dispatch}
     />
     }
     </>

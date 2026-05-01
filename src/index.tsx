@@ -1,43 +1,46 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './ui/App';
-import {loadConfig, saveConfig} from './ui/AppConfig';
-import i18n from './i18n';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import i18n, { loadLanguage } from "./i18n";
+import App from "./ui/App";
+import { loadConfig, saveConfig } from "./ui/AppConfig";
 
-(function() {
-    // add error handler
-    window.addEventListener('error', (event) => {
-        const { message, filename, lineno, colno, error } = event;
-        alert(`Uncaught error: ${message} (${filename}:${lineno}:${colno}) ${error.stack}`);
-    });
+(async () => {
+	// add error handler
+	window.addEventListener("error", (event) => {
+		const { message, filename, lineno, colno, error } = event;
+		alert(
+			`Uncaught error: ${message} (${filename}:${lineno}:${colno}) ${error.stack}`,
+		);
+	});
 
-    // set default language using browser language
-    let language = "en";
-    if (window.navigator.language.match(/ja/) !== null) {
-        language = "ja";
-    } else if (window.navigator.language.match(/ko/) !== null) {
-        language = "ko";
-    } else if (window.navigator.language.match(/^zh-hant/i) !== null) {
-        language = "zh-TW";
-    } else if (window.navigator.language.match(/^zh/i) !== null) {
-        language = "zh-CN";
-    }
-    const config = loadConfig(language);
-    config.pwacnt++;
-    saveConfig(config);
-    i18n.changeLanguage(config.language);
+	// set default language using browser language
+	let language = "en";
+	if (window.navigator.language.match(/ja/) !== null) {
+		language = "ja";
+	} else if (window.navigator.language.match(/ko/) !== null) {
+		language = "ko";
+	} else if (window.navigator.language.match(/^zh-hant/i) !== null) {
+		language = "zh-TW";
+	} else if (window.navigator.language.match(/^zh/i) !== null) {
+		language = "zh-CN";
+	}
+	const config = loadConfig(language);
+	config.pwacnt++;
+	saveConfig(config);
+	await loadLanguage(config.language);
+	i18n.changeLanguage(config.language);
 
-    const elm = document.getElementById('root');
-    if (elm === null) {
-        alert('root element not found');
-        return;
-    }
-    const root = ReactDOM.createRoot(elm);
-    root.render(
-        <React.StrictMode>
-            <App config={config}/>
-        </React.StrictMode>
-    );
+	const elm = document.getElementById("root");
+	if (elm === null) {
+		alert("root element not found");
+		return;
+	}
+	const root = ReactDOM.createRoot(elm);
+	root.render(
+		<React.StrictMode>
+			<App config={config} />
+		</React.StrictMode>,
+	);
 
     // emulate AdSense banner
     // if (window.location.hostname !== "nitoyon.github.io") {

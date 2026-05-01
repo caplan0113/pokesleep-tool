@@ -11,6 +11,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import { getInitialIvState } from "../IvCalc/IvState";
 import IngHelpDialog from "../IvCalc/Strength/IngHelpDialog";
 import IngredientIcon from '../IvCalc/IngredientIcon';
+import { IvAction } from "../IvCalc/IvState";
 
 interface HelperSkillDialogProps {
     open: boolean;
@@ -19,9 +20,10 @@ interface HelperSkillDialogProps {
     skillStrength: number;
     result: StrengthResult;
     skillInfo: { value: ({ name: string; strength: PokemonStrength; result: StrengthResult; flag: boolean } | null)[], baseValue: number };
+    dispatch: React.Dispatch<IvAction>;
 }
 
-const HelperSkillDialog = ({ open, onClose, skillName, skillStrength, result, skillInfo }: HelperSkillDialogProps) => {
+const HelperSkillDialog = ({ open, onClose, skillName, skillStrength, result, skillInfo, dispatch }: HelperSkillDialogProps) => {
     const { t } = useTranslation();
 
     // --- Hooks ---
@@ -57,7 +59,7 @@ const HelperSkillDialog = ({ open, onClose, skillName, skillStrength, result, sk
         <StyledInfoDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle sx={{ px: 1, pt: 1, pb: 1 }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{t(`skills.${skillName}`)}</Typography>
+                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>{t(`skills.${skillName}.name`)}</Typography>
                     <MainSkillIcon mainSkill={skillName} />
                     <Typography variant="h6" sx={{ ml: 1 }}>{formatNice(skillStrength, t)}</Typography>
                 </Box>
@@ -160,8 +162,8 @@ const HelperSkillDialog = ({ open, onClose, skillName, skillStrength, result, sk
                 </Button>
             </DialogActions>
 
-            <BerryHelpDialog open={berryHelpDialogOpen} onClose={() => setBerryHelpDialogOpen(false)} strength={selectedInfo.strength} result={selectedInfo.result} />
-            <IngHelpDialog open={ingHelpDialogOpen} onClose={() => setIngHelpDialogOpen(false)} strength={selectedInfo.strength} result={selectedInfo.result} dispatch={() => { }} />
+            <BerryHelpDialog open={berryHelpDialogOpen} onClose={() => setBerryHelpDialogOpen(false)} strength={selectedInfo.strength} result={selectedInfo.result} dispatch={dispatch} />
+            <IngHelpDialog open={ingHelpDialogOpen} onClose={() => setIngHelpDialogOpen(false)} strength={selectedInfo.strength} result={selectedInfo.result} dispatch={dispatch} />
         </StyledInfoDialog>
     );
 };
