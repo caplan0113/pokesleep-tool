@@ -6,6 +6,7 @@ import IvCalcNews from "./ja/IvCalcNews.json";
 import pokemons from "./ja/pokemons.json";
 import ResearchCalc from "./ja/ResearchCalc.json";
 import skills from "./ja/skills.json";
+import PartyCalc from "./ja/PartyCalc.json";
 
 export default {
 	translation: {
@@ -15,6 +16,9 @@ export default {
 		IvCalc: {
 			...IvCalc.IvCalc,
 			...IvCalcNews.IvCalc,
+		},
+		PartyCalc: {
+			...PartyCalc.PartyCalc,
 		},
 		...events,
 		...skills,
