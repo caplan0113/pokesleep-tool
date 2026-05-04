@@ -76,7 +76,7 @@ export default function App({ config }: { config: AppConfig }) {
 				<NewsInfo appType={curApp === "PartyCalc" ? "IvCalc" : curApp} onAppConfigChange={onAppConfigChange} />
 				{curApp === "ResearchCalc" && <ResearchCalcApp />}
 				{curApp === "IvCalc" && <IvCalcApp />}
-            {curApp === "PartyCalc" && <PartyCalcApp/>}
+            	{curApp === "PartyCalc" && <PartyCalcApp/>}
 				<PwaNotify
 					app={curApp}
 					pwaCount={config.pwacnt}
