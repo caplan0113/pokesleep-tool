@@ -165,7 +165,7 @@ const TeamSummary = memo(({ teamData, pokemonIv, settings, energyDialogOpen, dis
             open={energyDialogOpen}
             iv={pokemonIv}
             parameter={settings}
-            energy={result.energy}
+            result={result}
             onClose={() => dispatch({ type: "closeEnergyDialog" })}
             dispatch={dispatch}
           />

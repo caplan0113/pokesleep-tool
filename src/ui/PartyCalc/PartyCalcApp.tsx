@@ -738,7 +738,16 @@ export default function PartyCalcApp() {
           <Box sx={{ display: 'flex', gap: 1, mb: 1 }}>
             {teamData.map((data, idx) => (
               <Box key={`slot-${idx}-${data?.iv || 'empty'}`} sx={{ width: '20%', minWidth: 0 }}>
-                <PartyMemberSlot member={data} onRemove={() => handleRemoveTeamMember(idx)} onEdit={() => handleEditTeamMember(idx)} onView={() => handleSelectMemberView(idx)} onReplay={() => handleReplayMember(idx)} onTouch={() => handleSwitchTouchFlag(idx)} infoFlag={idx === teamItemViewIdx} dispatch={dispatch} />
+                <PartyMemberSlot 
+                  member={data} 
+                  onRemove={() => handleRemoveTeamMember(idx)} 
+                  onEdit={() => handleEditTeamMember(idx)} 
+                  onView={() => handleSelectMemberView(idx)} 
+                  onReplay={() => handleReplayMember(idx)} 
+                  onTouch={() => handleSwitchTouchFlag(idx)} 
+                  infoFlag={idx === teamItemViewIdx} 
+                  dispatch={dispatch} 
+                />
               </Box>
             ))}
           </Box>
