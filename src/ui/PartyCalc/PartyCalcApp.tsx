@@ -141,12 +141,16 @@ export default function PartyCalcApp() {
       teamSpecies[type].add(name);
     });
 
+    // ラティ兄妹の有無
+    const hasLatias = validMembers.some(m => m.iv.pokemon.name === "Latias");
+    const hasLatios = validMembers.some(m => m.iv.pokemon.name === "Latios");
+
     // --- 3. 下準備：スキル計算に必要な「パーティ全体の基礎値」を1回だけ計算 ---
     const strengthPerHelpCalcParams = createStrengthParameter({
       ...state.parameter,
       addHelpingBonusEffect: false,
       totalFlags: [true, false, true], // 食材無効
-      period: -1
+      period: -1,
     });
 
     // 各自の「ヘルプ1回あたりの値」をあらかじめ計算しておく
@@ -193,6 +197,7 @@ export default function PartyCalcApp() {
         },
         tapFrequencyAsleep: (dTouchFlag ? 0 : state.parameter.tapFrequencyAsleep),
         tapFrequencyAwake: (dTouchFlag ? 0 : state.parameter.tapFrequencyAwake),
+        latiTwins: hasLatias && hasLatios
       });
 
       const pokeStrength = new PokemonStrength(iv, currentCalcParams);
