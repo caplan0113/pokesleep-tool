@@ -23,6 +23,9 @@ import BoxExportDialog from '../IvCalc/Box/BoxExportDialog';
 import BoxImportDialog from '../IvCalc/Box/BoxImportDialog';
 import BoxDeleteAllDialog from '../IvCalc/Box/BoxDeleteAllDialog';
 import { useTranslation } from 'react-i18next';
+import { getEventBonus } from "../../data/events";
+import { isExpertField } from "../../data/fields";
+import { PokemonTypes } from "../../data/pokemons";
 
 const defaultIV = getInitialIvState().pokemonIv.changeLevel(1);
 
@@ -276,6 +279,46 @@ export default function PartyCalcApp() {
   const dispatch = useCallback((action: IvAction) => {
     if (action.type === "changeParameter") { // パラメータ変更
       const newParam = action.payload.parameter;
+
+      // apply event fixedBerries type
+      const event = getEventBonus(
+        newParam.event,
+        newParam.customEventBonus,
+      );
+      if (
+        event.fixedBerries.length === 3 &&
+        event.fixedAreas.includes(newParam.fieldIndex)
+      ) {
+        let fixRequired = false;
+        const isExpert = isExpertField(newParam.fieldIndex);
+        for (let i = 0; i < 3; i++) {
+          if (event.fixedBerries[i] !== null) {
+            if (
+              (isExpert &&
+                !newParam.favoriteType.includes(event.fixedBerries[i])) ||
+              (!isExpert &&
+                newParam.favoriteType[i] !== event.fixedBerries[i])
+            ) {
+              fixRequired = true;
+              break;
+            }
+          }
+        }
+        if (fixRequired) {
+          newParam.favoriteType = [...event.fixedBerries];
+          if (newParam.favoriteType[1] === null) {
+            newParam.favoriteType[1] =
+              PokemonTypes.find((x) => !newParam.favoriteType.includes(x)) ??
+              "normal";
+          }
+          if (newParam.favoriteType[2] === null) {
+            newParam.favoriteType[2] =
+              PokemonTypes.find((x) => !newParam.favoriteType.includes(x)) ??
+              "normal";
+          }
+        }
+      }
+
       setState(prevState => ({
         ...prevState,
         parameter: newParam,
