@@ -234,7 +234,6 @@ export default function PartyCalcApp() {
         const ratio = pokeStrengthCal.skillValue2 / validMembers.length * Math.min(2, validMembers.length);
         
         skillStrength = ratio * teamStrengthPerHelpBerryTotal;
-        console.log("skillStrength", skillStrength, ratio, teamStrengthPerHelpBerryTotal);
         
         skillIngTotal = {};
         preCalculatedBaseStats.forEach(stat => {
