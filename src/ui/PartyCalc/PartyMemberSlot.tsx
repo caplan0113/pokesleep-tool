@@ -136,7 +136,7 @@ const PartyMemberSlot = memo(({ member, onRemove, onEdit, onView, onReplay, onTo
         <CloseIcon sx={{ fontSize: 18 }} />
       </IconButton>
 
-      <PokemonIcon idForm={iv.idForm} size={36} />
+      <PokemonIcon idForm={iv.idForm} shiny={iv.shiny} size={36} />
       
       {/* ニックネーム表示 */}
       <Typography 
