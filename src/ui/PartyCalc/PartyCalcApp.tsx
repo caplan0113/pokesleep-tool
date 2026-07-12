@@ -582,6 +582,14 @@ export default function PartyCalcApp() {
   }, [state.box]);
 
   // default handlers
+  const onSelect = useCallback((id: number) => { // ボックスから選択
+    dispatch({ type: "select", payload: { id } });
+  }, [dispatch]);
+
+  const onEdit = useCallback((id: number) => { // ボックスアイテム編集
+    dispatch({ type: "edit", payload: { id } });
+  }, [dispatch]);
+
   const onBoxItemEditDialogClose = useCallback(() => { // ボックスアイテム編集ダイアログ閉
     dispatch({ type: "editDialogClose"});
   }, [dispatch]);
@@ -813,13 +821,14 @@ export default function PartyCalcApp() {
           <IvForm parameter={state.parameter} pokemonIv={state.pokemonIv} onChange={onPokemonIvChange} dispatch={dispatch}/>
       </div>
       <div style={{display: state.lowerTabIndex === 1 ? 'block' : 'none'}}>
-        <BoxView items={state.box.items} iv={state.pokemonIv} selectedId={state.selectedItemId} dispatch={dispatch} parameter={state.parameter} />
+        <BoxView items={state.box.items} iv={state.pokemonIv} selectedId={state.selectedItemId} dispatch={dispatch} parameter={state.parameter} onSelect={onSelect} onEdit={onEdit}/>
       </div>
       <div style={{ contentVisibility: 'auto' , display: state.lowerTabIndex === 2 ? 'block' : 'none' }}>
         <Box sx={{ bgcolor: '#fff', p: 1, borderRadius: 2 }}>
           <StrengthParameterForm 
             dispatch={dispatch} 
             value={state.parameter} 
+            items={state.box.items}
             hasHelpingBonus={state.pokemonIv.hasHelpingBonusInActiveSubSkills} 
           />
         </Box>
