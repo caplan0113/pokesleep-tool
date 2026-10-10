@@ -2,6 +2,14 @@
 	"ResearchCalc": [],
 	"IvCalc": [
 		{
+			"date": "2026-10-10T11:20:00Z",
+			"id": "box sync"
+		},
+		{
+			"date": "2026-10-05T09:00:00Z",
+			"id": "add foongus"
+		},
+		{
 			"date": "2026-09-14T09:52:00Z",
 			"id": "add mewtwo"
 		},

@@ -1,6 +1,6 @@
 import { styled } from "@mui/system";
 import React from "react";
-import type { PokemonBoxItem } from "../../../util/PokemonBox";
+import type { PokemonBoxItem } from "../../../util/Box/PokemonBox";
 import type IvState from "../IvState";
 import type { IvAction } from "../IvState";
 import EditMemberDialog from "./EditMemberDialog";
@@ -98,7 +98,7 @@ const StyledTeamView = styled("div")({
 	display: "grid",
 	gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr",
 	gridGap: ".4rem",
-	margin: "0.6rem 0.5rem 10rem",
+	margin: "0.6rem 0.5rem 25rem",
 	"& > article": {
 		display: "flex",
 		justifyContent: "center",
