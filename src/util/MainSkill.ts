@@ -163,7 +163,9 @@ export function getMaxSkillLevel(skill: MainSkillName): 6 | 7 | 8 {
 		skill === "Ingredient Draw S (Super Luck)" ||
 		skill === "Ingredient Draw S (Hyper Cutter)" ||
 		skill === "Cooking Assist S" ||
-		skill === "Cooking Assist S (Bulk Up)"
+		skill === "Cooking Assist S (Bulk Up)" ||
+		skill === "Cooking Advance S" ||
+		skill === "Cooking Advance S (Mystical Fire)"
 	) {
 		return 7;
 	}
@@ -225,7 +227,10 @@ export function getSkillValue(
 	if (skill === "Charge Strength M (Bad Dreams)") {
 		return [2640, 3753, 5178, 7149, 9870, 13638, 18515][skillLevel - 1];
 	}
-	if (skill === "Cooking Power-Up S") {
+	if (
+		skill === "Cooking Power-Up S" ||
+		skill === "Cooking Advance S (Mystical Fire)"
+	) {
 		return [7, 10, 12, 17, 22, 27, 31][skillLevel - 1];
 	}
 	if (skill === "Cooking Power-Up S (Minus)") {
@@ -354,7 +359,10 @@ export function getSkillSubValue(
 		// Amount of Dream Shards (x1)
 		return [500, 720, 1030, 1440, 2000, 2800, 4000][skillLevel - 1];
 	}
-	if (skill === "Cooking Assist S (Bulk Up)") {
+	if (
+		skill === "Cooking Assist S (Bulk Up)" ||
+		skill === "Cooking Advance S (Mystical Fire)"
+	) {
 		return [1, 2, 2, 3, 3, 4, 5][skillLevel - 1];
 	}
 	if (skill === "Versatile") {
@@ -366,9 +374,6 @@ export function getSkillSubValue(
 	}
 	if (skill === "Berry Zone (Psystrike)") {
 		return [0.6, 0.8, 1, 1.2, 1.6, 2][skillLevel - 1];
-	}
-	if (skill === "Cooking Advance S (Mystical Fire)") {
-		return 0;
 	}
 	throw new Error(`This skill doesn’t have a sub-value: ${skill}`);
 }
