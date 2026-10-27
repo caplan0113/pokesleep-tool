@@ -63,7 +63,7 @@ const TeamSummary = memo(
 				settings.period > 0 && NCFlag ? settings.period / (3540 / 3600) : 0;
 			const NC_BerryStrength =
 				Math.ceil(
-					pikachuResult.berryStrength * pikachuStrength.berryStrengthBonus,
+					pikachuResult.berry1Strength * pikachuStrength.berryStrengthBonus,
 				) *
 				2 *
 				0.583 *
