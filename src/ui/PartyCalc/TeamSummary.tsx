@@ -115,26 +115,7 @@ const TeamSummary = memo(
 
 			teamTotals.total += NC_BerryStrength;
 			teamTotals.berry += NC_BerryStrength;
-			console.log(
-				"NC_BerryStrength:",
-				NC_BerryStrength,
-				"NC_Ingredient:",
-				NC_Ingredient,
-			);
-			console.log(
-				"NC_HelpCount:",
-				NC_HelpCount,
-				"NCFlag:",
-				NCFlag,
-				"settings.period:",
-				settings.period,
-			);
-			console.log(
-				"pikachuResult.berryStrength:",
-				pikachuResult.berryStrength,
-				"pikachuStrength.berryStrengthBonus:",
-				pikachuStrength.berryStrengthBonus,
-			);
+      
 			Object.entries(NC_Ingredient).forEach(([name, count]) => {
 				teamTotals.ingCounts[name as IngredientName] =
 					(teamTotals.ingCounts[name as IngredientName] || 0) + count;
