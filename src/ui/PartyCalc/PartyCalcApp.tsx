@@ -19,7 +19,8 @@ import { useAuthUser } from "../common/Hook";
 import BoxDeleteAllDialog from "../IvCalc/Box/BoxDeleteAllDialog";
 import BoxExportDialog from "../IvCalc/Box/BoxExportDialog";
 import BoxImportDialog from "../IvCalc/Box/BoxImportDialog";
-import BoxItemDialog from "../IvCalc/Box/BoxItemDialog";
+// import BoxItemDialog from "../IvCalc/Box/BoxItemDialog";
+import BoxItemDrawer from "../IvCalc/Box/BoxItemDrawer";
 import BoxTabChild from "../IvCalc/Box/BoxTabChild";
 import IvForm from "../IvCalc/IvForm/IvForm";
 import {
@@ -31,6 +32,8 @@ import LowerTabHeader from "../IvCalc/LowerTabHeader";
 import StrengthBerryIngSkillView from "../IvCalc/Strength/StrengthBerryIngSkillView";
 import StrengthParameterForm from "../IvCalc/Strength/StrengthParameterForm";
 import StrengthParameterSummary from "../IvCalc/Strength/StrengthParameterSummary";
+import EditMemberDialog from "../IvCalc/Team/EditMemberDialog";
+import MemberList from "../IvCalc/Team/MemberList";
 import { useBoxSync } from "../IvCalc/useBoxSync";
 import PartyMemberSlot from "./PartyMemberSlot";
 import TeamSummary from "./TeamSummary";
@@ -139,15 +142,16 @@ const PartyCalcApp = React.memo(() => {
 			setEditBoxItemFlag(false);
 		}
 
-		const teamSerials = allTeams[deferredTeamIndex];
+		const teamSerials = state.teams[state.teamIndex];
 
 		// --- 1. メンバーの復元（デシリアライズは1回だけ） ---
-		const members = teamSerials.map((s) => {
-			if (!s || !s[0]) return null;
+		const members = teamSerials.members.map((s) => {
+			if (!s) return null;
 			try {
-				const [serial, nickname] = s[0].split("@");
+				const item = s.item;
+				const [serial, nickname] = item.serialize().split("@");
 				const iv = PokemonIv.deserialize(serial);
-				return { iv, nickname: nickname || "", dTouchFlag: s[1] };
+				return { iv, nickname: nickname || "", dTouchFlag: s.sneakySnacking };
 			} catch {
 				return null;
 			}
@@ -350,8 +354,8 @@ const PartyCalcApp = React.memo(() => {
 			};
 		});
 	}, [
-		allTeams,
-		deferredTeamIndex,
+		state.teams,
+		state.teamIndex,
 		state.parameter,
 		state.box,
 		editBoxItemFlag,
@@ -405,20 +409,12 @@ const PartyCalcApp = React.memo(() => {
 				setStrengthTabValue(1);
 				// }
 				setTeamItemViewIdx(null);
-			} else if (action.type === "edit") {
-				// ボックスアイテム編集
-				// setIsEditBoxItem(true);
-				// setBoxItemDialogOpen(true);
-				setEditBoxItem(state.box.getById(action.payload.id));
-				const id = action.payload.id;
-				console.log("Box", state.box);
-				const item = state.box.getById(id);
-
-				console.log("Editing box item with ID:", id, item);
-
-				console.log("Current state before edit action:", state);
-				dispatch(action);
-				console.log("State after edit action:", state);
+				// } else if (action.type === "edit") {
+				// 	// ボックスアイテム編集
+				// 	// setIsEditBoxItem(true);
+				// 	// setBoxItemDialogOpen(true);
+				// 	setEditBoxItem(state.box.getById(action.payload.id));
+				// 	dispatch(action);
 			} else if (action.type === "addOrEditDone") {
 				// ボックスアイテム編集・追加完了
 				const value = action.payload.item;
@@ -469,12 +465,12 @@ const PartyCalcApp = React.memo(() => {
 	const onEdit = useCallback((id: number) => {
 		// ボックスアイテム編集
 		// dispatch({ type: "edit", payload: { id } });
-		my_dispatch({ type: "edit", payload: { id } });
+		// my_dispatch({ type: "edit", payload: { id } });
 	}, []);
 
 	const onBoxItemEditDialogClose = useCallback(() => {
 		// ボックスアイテム編集ダイアログ閉
-		my_dispatch({ type: "editDialogClose" });
+		// my_dispatch({ type: "editDialogClose" });
 	}, []);
 
 	const onBoxItemDialogChange = useCallback((value: PokemonBoxItem) => {
@@ -565,13 +561,13 @@ const PartyCalcApp = React.memo(() => {
 
 			const editTeamMemberBoxItem =
 				currentTeamIndex !== null && teamData[idx] !== null
-					? new PokemonBoxItem(teamData[idx].iv, teamData[idx].nickname, -1)
+					? new PokemonBoxItem(teamData[idx].iv, teamData[idx].nickname)
 					: null;
 
-			my_dispatch({
-				type: "edit",
-				payload: { id: state.box.items[0]?.id || -1 },
-			}); // ダミーIDを渡す
+			// my_dispatch({
+			// 	type: "edit",
+			// 	payload: { id: state.box.items[0]?.id || -1 },
+			// }); // ダミーIDを渡す
 			setEditBoxItem(editTeamMemberBoxItem);
 		},
 		[teamData, currentTeamIndex],
@@ -714,7 +710,7 @@ const PartyCalcApp = React.memo(() => {
 						display: state.lowerTabIndex !== 0 ? "block" : "none",
 					}}
 				>
-					<Box
+					{/* <Box
 						sx={{
 							display: "flex",
 							justifyContent: "space-between",
@@ -776,9 +772,11 @@ const PartyCalcApp = React.memo(() => {
 									infoFlag={idx === teamItemViewIdx}
 									dispatch={my_dispatch}
 								/>
+                
 							</Box>
 						))}
-					</Box>
+					</Box> */}
+					<MemberList state={state} dispatch={dispatch} />
 				</Box>
 
 				{state.lowerTabIndex !== 2 ? (
@@ -826,6 +824,7 @@ const PartyCalcApp = React.memo(() => {
 					status={state.boxStatus}
 					saveStatus={saveStatus}
 					selectedId={state.selectedItemId}
+					drawerPosition={state.boxDrawerPosition}
 					dispatch={my_dispatch}
 					parameter={state.parameter}
 				/>
@@ -846,7 +845,7 @@ const PartyCalcApp = React.memo(() => {
 				</Box>
 			</div>
 
-			<BoxItemDialog
+			{/* <BoxItemDialog
 				open={state.boxItemDialogOpen}
 				boxItem={editBoxItem}
 				isEdit={state.boxItemDialogIsEdit}
@@ -854,7 +853,17 @@ const PartyCalcApp = React.memo(() => {
 				onClose={onBoxItemEditDialogClose}
 				onChange={onBoxItemDialogChange}
 				dispatch={my_dispatch}
-			/>
+			/> */}
+			{/* <BoxItemDrawer
+        open={state.boxItemDialogOpen}
+        boxItem={editBoxItem}
+        isEdit={state.boxItemDialogIsEdit}
+        parameter={state.parameter}
+        onClose={onBoxItemEditDialogClose}
+        onChange={onBoxItemDialogChange}
+        dispatch={my_dispatch}
+        drawerPosition={state.boxDrawerPosition}
+      /> */}
 			<BoxExportDialog
 				box={state.box}
 				open={state.boxExportDialogOpen}
