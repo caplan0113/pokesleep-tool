@@ -718,21 +718,7 @@ const PartyCalcApp = React.memo(() => {
 							mb: 1,
 						}}
 					>
-						<Typography variant="h6" sx={{ fontWeight: "bold" }}>
-							パーティ編成 {currentTeamIndex + 1}
-							<IconButton
-								size="small"
-								onClick={handleStrengthTabChange}
-								sx={{ position: "relative", top: -2.5, left: 5, p: 0.2 }}
-							>
-								<InfoOutlinedIcon
-									sx={{
-										fontSize: 24,
-										color: strengthTabValue === 0 ? "#29ce10ff" : "inherit",
-									}}
-								/>
-							</IconButton>
-						</Typography>
+						
 						<Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
 							{[0, 1, 2, 3, 4].map((idx) => (
 								<Button
@@ -776,6 +762,22 @@ const PartyCalcApp = React.memo(() => {
 							</Box>
 						))}
 					</Box> */}
+
+          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+							パーティ編成 {currentTeamIndex + 1}
+							<IconButton
+								size="small"
+								onClick={handleStrengthTabChange}
+								sx={{ position: "relative", top: -2.5, left: 5, p: 0.2 }}
+							>
+								<InfoOutlinedIcon
+									sx={{
+										fontSize: 24,
+										color: strengthTabValue === 0 ? "#29ce10ff" : "inherit",
+									}}
+								/>
+							</IconButton>
+						</Typography>
 					<MemberList state={state} dispatch={dispatch} />
 				</Box>
 
