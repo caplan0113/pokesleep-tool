@@ -51,6 +51,7 @@
 		"Rash": "马虎",
 		"Quiet": "冷静"
 	},
+	"neutralizing mint": "净白薄荷",
 	"nature effect": {
 		"No effect": "没有性格带来的特色",
 		"Energy recovery": "活力回复量",
@@ -109,6 +110,7 @@
 		"corn": "萌绿玉米",
 		"coffee": "醒脑咖啡豆",
 		"pumpkin": "沉甸甸南瓜",
-		"avocado": "嫩亮鳄梨"
+		"avocado": "嫩亮鳄梨",
+		"nuts": "一口坚果"
 	}
 }

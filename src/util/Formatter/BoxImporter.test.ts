@@ -22,6 +22,8 @@ const t = ((key: string, opts?: Record<string, unknown>): string => {
 		ingredient: "Ingredient",
 		nature: "Nature",
 		shiny: "Shiny",
+		favorite: "Favorite",
+		"neutralizing mint": "Neutralizing Mint",
 		"sleeping time shared": "Sleeping Time Shared",
 		"subskill.Berry Finding S": "Berry Finding S",
 		"subskill.Helping Bonus": "Helping Bonus",
@@ -93,10 +95,12 @@ describe("importFromCsvTsv", () => {
 			lv80: "",
 			ribbon: "0",
 			shiny: "0",
+			favorite: "",
+			mint: "0",
 		};
 		const d = { ...defaults, ...overrides };
 		const header =
-			"Nickname,Pokémon,Level,Skill Level,Ing 1,Ing 2,Ing 3,Main Skill,Nature,Lv10,Lv25,Lv50,Lv70,Lv80,Ribbon,Shiny";
+			"Nickname,Pokémon,Level,Skill Level,Ing 1,Ing 2,Ing 3,Main Skill,Nature,Lv10,Lv25,Lv50,Lv70,Lv80,Ribbon,Shiny,Favorite,Neutralizing Mint";
 		const row = [
 			d.nickname,
 			d.pokemon,
@@ -114,6 +118,8 @@ describe("importFromCsvTsv", () => {
 			d.lv80,
 			d.ribbon,
 			d.shiny,
+			d.favorite,
+			d.mint,
 		].join(",");
 		return `${header}\n${row}`;
 	}
@@ -218,12 +224,89 @@ describe("importFromCsvTsv", () => {
 		}
 	});
 
+	test("import preserves mint flag", () => {
+		const r1 = importFromCsvTsv(
+			makeMinimalCsv({ nature: "Adamant", mint: "1" }),
+			"csv",
+			t,
+		);
+		expect(r1.items[0].iv.nature.name).toBe("Adamant");
+		expect(r1.items[0].iv.nature.mint).toBe(true);
+
+		const r2 = importFromCsvTsv(
+			makeMinimalCsv({ nature: "Adamant", mint: "0" }),
+			"csv",
+			t,
+		);
+		expect(r2.items[0].iv.nature.mint).toBe(false);
+
+		// Missing column means no mint
+		const r3 = importFromCsvTsv("Pokemon,Nature\nPikachu,Adamant", "csv", t);
+		expect(r3.items[0].iv.nature.mint).toBe(false);
+	});
+
+	test("import ignores mint flag for neutral natures", () => {
+		const neutralNatures = ["Bashful", "Hardy", "Docile", "Quirky", "Serious"];
+		for (const nature of neutralNatures) {
+			for (const mint of ["1", "true"]) {
+				const csv = makeMinimalCsv({ nature, mint });
+				const tsv = csv.replace(/,/g, "\t");
+				for (const [text, format] of [
+					[csv, "csv"],
+					[tsv, "tsv"],
+				] as const) {
+					const result = importFromCsvTsv(text, format, t);
+					const label = `${nature} mint=${mint} (${format})`;
+					// Imported without warnings, but the mint flag is dropped
+					expect(result.warnings, label).toHaveLength(0);
+					expect(result.items, label).toHaveLength(1);
+					expect(result.items[0].iv.nature.name, label).toBe(nature);
+					expect(result.items[0].iv.nature.mint, label).toBe(false);
+				}
+			}
+		}
+	});
+
+	test("export and import round-trip keeps mint flag", () => {
+		const item = makeItem({
+			pokemonName: "Pikachu",
+			nature: new Nature("Bold", true),
+		});
+		for (const format of ["csv", "tsv"] as const) {
+			const text = exportToCsvTsv([item], t, format);
+			const imported = importFromCsvTsv(text, format, t);
+			expect(imported.items).toHaveLength(1);
+			expect(imported.items[0].iv.nature.isEqual(item.iv.nature)).toBe(true);
+		}
+	});
+
 	test("import preserves shiny flag", () => {
 		const result1 = importFromCsvTsv(makeMinimalCsv({ shiny: "1" }), "csv", t);
 		expect(result1.items[0].iv.shiny).toBe(true);
 
 		const result2 = importFromCsvTsv(makeMinimalCsv({ shiny: "0" }), "csv", t);
 		expect(result2.items[0].iv.shiny).toBe(false);
+	});
+
+	test("import favorites from emojis", () => {
+		const favorites = (favorite: string) =>
+			importFromCsvTsv(makeMinimalCsv({ favorite }), "csv", t).items[0]
+				.favorites;
+		expect(favorites("")).toBe(0);
+		// bit 0: yellow, bit 6: red
+		expect(favorites("💛❤️")).toBe((1 << 0) | (1 << 6));
+		// without variation selector, with spaces
+		expect(favorites(" ❤ 💛 ")).toBe((1 << 0) | (1 << 6));
+	});
+
+	test("import warns for unknown favorite emoji", () => {
+		const result = importFromCsvTsv(
+			makeMinimalCsv({ favorite: "⭐" }),
+			"csv",
+			t,
+		);
+		expect(result.items).toHaveLength(0);
+		expect(result.warnings[0].fields).toEqual(["favorite"]);
 	});
 
 	test("import preserves nickname", () => {

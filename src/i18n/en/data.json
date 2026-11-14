@@ -51,6 +51,7 @@
 		"Rash": "Rash",
 		"Quiet": "Quiet"
 	},
+	"neutralizing mint": "Neutralizing Mint",
 	"nature effect": {
 		"No effect": "This nature has no effect",
 		"Energy recovery": "Energy recovery",
@@ -109,6 +110,7 @@
 		"corn": "Greengrass Corn",
 		"coffee": "Rousing Coffee",
 		"pumpkin": "Plump Pumpkin",
-		"avocado": "Glossy Avocado"
+		"avocado": "Glossy Avocado",
+		"nuts": "Snackable Nuts"
 	}
 }

@@ -25,6 +25,7 @@ export const ingredientStrength: { [ing in IngredientName]: number } = {
 	coffee: 153,
 	pumpkin: 250,
 	avocado: 162,
+	nuts: 0,
 	unknown: 0,
 	unknown1: 0,
 	unknown2: 0,
@@ -42,17 +43,6 @@ export const averageIngredientStrength: number = (() => {
 	const total = ingredients.reduce((sum, [, strength]) => sum + strength, 0);
 	return total / ingredients.length;
 })();
-
-export type IngredientType = "AAA" | "AAB" | "AAC" | "ABA" | "ABB" | "ABC";
-
-export const IngredientTypes: IngredientType[] = [
-	"AAA",
-	"AAB",
-	"AAC",
-	"ABA",
-	"ABB",
-	"ABC",
-];
 
 export interface RpStrengthResult {
 	rp: number;

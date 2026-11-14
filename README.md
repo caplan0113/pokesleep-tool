@@ -39,4 +39,4 @@ Runs unit tests.
 
 ## License
 
-MIT
+MIT — see [LICENSE.md](LICENSE.md).

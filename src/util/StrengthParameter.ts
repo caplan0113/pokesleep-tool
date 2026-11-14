@@ -1,4 +1,8 @@
-import events, { getEventBonus, loadHelpEventBonus } from "../data/events";
+import events, {
+	emptyBonusEffects,
+	getEventBonus,
+	loadHelpEventBonus,
+} from "../data/events";
 import fields, { isExpertField } from "../data/fields";
 import { type PokemonType, PokemonTypes } from "../data/pokemons";
 import { clamp } from "../util/NumberUtil";
@@ -18,6 +22,23 @@ export const allFavoriteFieldIndex = -2;
 
 /** Pseudo field index where no berries are favorites */
 export const noFavoriteFieldIndex = -1;
+
+/**
+ * Selectable period hours (0.5 to 23.5 hours in 0.5 steps, 1 to 6 days, 1 week).
+ */
+export const periodHours: Readonly<number[]> = [
+	...Array.from({ length: 47 }, (_, i) => (i + 1) * 0.5),
+	24,
+	48,
+	72,
+	96,
+	120,
+	144,
+	168,
+];
+
+/** Selectable help count periods (negative value means help count) */
+export const helpCountPeriods: Readonly<number[]> = [-10, -30, -100];
 
 /** Max level of Night Cap Pikachu */
 export const maxNcpLevel = 20;
@@ -252,22 +273,7 @@ export function createStrengthParameter(
 		customEventBonus: {
 			target: {},
 			effects: {
-				berry: 0,
-				skillTrigger: 1,
-				skillLevel: 0,
-				ingredient: 0,
-				dreamShard: 1,
-				ingredientMagnet: 1,
-				ingredientDraw: 1,
-				skillIngredient: 1,
-				berryBurst: 1,
-				dish: 1,
-				energyFromDish: 0,
-				carryLimitAdd: 0,
-				carryLimitMul: 1,
-				globalCarryLimitAdd: 0,
-				bigBerry: "",
-				potSize: 1,
+				...emptyBonusEffects,
 				fixedAreas: [],
 				fixedBerries: [],
 			},
@@ -334,7 +340,9 @@ export function deserializeStrengthParameter(json: any): StrengthParameter {
 	const ret: StrengthParameter = createStrengthParameter({});
 	if (
 		typeof json.period === "number" &&
-		[1, 3, 8, 16, 24, 168, whistlePeriod, -10, -30, -100].includes(json.period)
+		(periodHours.includes(json.period) ||
+			helpCountPeriods.includes(json.period) ||
+			json.period === whistlePeriod)
 	) {
 		ret.period = json.period;
 	}
@@ -489,7 +497,7 @@ export function deserializeStrengthParameter(json: any): StrengthParameter {
 	if (
 		typeof json.helperBoostSpecies === "number" &&
 		json.helperBoostSpecies > 0 &&
-		json.helperBoostSpecies <= 6
+		json.helperBoostSpecies <= 5
 	) {
 		ret.helperBoostSpecies = json.helperBoostSpecies;
 	}

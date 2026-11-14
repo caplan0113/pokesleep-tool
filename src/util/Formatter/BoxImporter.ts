@@ -3,11 +3,15 @@ import pokemons, {
 	type IngredientName,
 	IngredientNames,
 } from "../../data/pokemons";
+import { emojisToFavoriteMask } from "../Box/FavoriteColor";
 import { PokemonBoxItem } from "../Box/PokemonBox";
 import { type MainSkillName, VersatileCandidates } from "../MainSkill";
 import Nature from "../Nature";
-import PokemonIv, { type PokemonIvProps } from "../PokemonIv";
-import { type IngredientType, IngredientTypes } from "../PokemonRp";
+import PokemonIv, {
+	type IngredientType,
+	IngredientTypes,
+	type PokemonIvProps,
+} from "../PokemonIv";
 import SubSkill, { type SubSkillType } from "../SubSkill";
 import SubSkillList from "../SubSkillList";
 import { CsvParser } from "./CsvFormatter";
@@ -57,7 +61,9 @@ export type FieldName =
 	| "lv70"
 	| "lv80"
 	| "ribbon"
-	| "shiny";
+	| "shiny"
+	| "favorite"
+	| "mint";
 
 // Well-known header labels (English and translated) mapped to canonical field names
 export const HEADER_ALIASES: Array<[string[], FieldName]> = [
@@ -77,6 +83,8 @@ export const HEADER_ALIASES: Array<[string[], FieldName]> = [
 	[["lv80"], "lv80"],
 	[["ribbon", "sleeping time shared"], "ribbon"],
 	[["shiny"], "shiny"],
+	[["favorite", "favorites"], "favorite"],
+	[["mint", "neutralizing mint"], "mint"],
 ];
 
 /**
@@ -138,7 +146,11 @@ export function importFromCsvTsv(
 		try {
 			const result = parseBoxRow(row, getField, maps);
 			if (result.kind === "ok") {
-				items.push(new PokemonBoxItem(result.iv, result.nickname));
+				items.push(
+					new PokemonBoxItem(result.iv, result.nickname).withFavorites(
+						result.favorites,
+					),
+				);
 			} else {
 				warnings.push({
 					row: rowNumber,
@@ -179,7 +191,7 @@ export function detectFormat(text: string): BoxImportFormat {
 }
 
 type ParseRowResult =
-	| { kind: "ok"; iv: PokemonIv; nickname: string }
+	| { kind: "ok"; iv: PokemonIv; nickname: string; favorites: number }
 	| { kind: "error"; fields: FieldName[] };
 
 function parseBoxRow(
@@ -274,7 +286,10 @@ function parseBoxRow(
 	if (!natureName) {
 		return { kind: "error", fields: ["nature"] };
 	}
-	props.nature = new Nature(natureName);
+	// Neutralizing Mint (ignored for neutral natures)
+	const mintStr = getField(row, "mint").trim();
+	const mint = mintStr === "1" || mintStr.toLowerCase() === "true";
+	props.nature = new Nature(natureName, mint);
 
 	// SubSkill
 	const subSkillWarnings: FieldName[] = [];
@@ -317,7 +332,13 @@ function parseBoxRow(
 	const shinyStr = getField(row, "shiny").trim();
 	props.shiny = shinyStr === "1" || shinyStr.toLowerCase() === "true";
 
-	return { kind: "ok", iv: new PokemonIv(props), nickname };
+	// Favorite
+	const favorites = emojisToFavoriteMask(getField(row, "favorite"));
+	if (favorites === null) {
+		return { kind: "error", fields: ["favorite"] };
+	}
+
+	return { kind: "ok", iv: new PokemonIv(props), nickname, favorites };
 }
 
 function hoursToRibbon(hours: number): 0 | 1 | 2 | 3 | 4 {
@@ -357,6 +378,8 @@ function buildFieldColumnMap(
 	labelToField.set(normalizeKey(t("nature")), "nature");
 	labelToField.set(normalizeKey(t("sleeping time shared")), "ribbon");
 	labelToField.set(normalizeKey(t("shiny")), "shiny");
+	labelToField.set(normalizeKey(t("favorite")), "favorite");
+	labelToField.set(normalizeKey(t("neutralizing mint")), "mint");
 
 	// Map FieldName -> raw column name string
 	const fieldToColumn = new Map<FieldName, string>();
@@ -426,6 +449,8 @@ function fieldDisplayName(field: FieldName, t: TFunction): string {
 		lv80: "lv80",
 		ribbon: t("sleeping time shared"),
 		shiny: t("shiny"),
+		favorite: t("favorite"),
+		mint: t("neutralizing mint"),
 	};
 	return map[field] ?? field;
 }

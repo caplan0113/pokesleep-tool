@@ -51,6 +51,7 @@
 		"Rash": "덜렁",
 		"Quiet": "냉정"
 	},
+	"neutralizing mint": "순백민트",
 	"nature effect": {
 		"No effect": "특징 없음",
 		"Energy recovery": "기력 회복량",
@@ -109,6 +110,7 @@
 		"corn": "연둣빛옥수수",
 		"coffee": "각성원두",
 		"pumpkin": "묵직한호박",
-		"avocado": "반들반들아보카도"
+		"avocado": "반들반들아보카도",
+		"nuts": "한 입 너츠"
 	}
 }

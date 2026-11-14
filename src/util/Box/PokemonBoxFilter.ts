@@ -9,6 +9,7 @@ import {
 import { type MainSkillName, matchMainSkillName } from "../MainSkill";
 import type { NatureEffect } from "../Nature";
 import type { SubSkillType } from "../SubSkill";
+import { type FavoriteColor, favoriteColors } from "./FavoriteColor";
 import type { PokemonBoxItem } from "./PokemonBox";
 
 /**
@@ -23,6 +24,10 @@ interface IBoxFilterConfig {
 	filterSpecialty: PokemonSpecialty[];
 	/** Filter rarity ('all' means no filter) */
 	filterRarity: PokemonRarityFilter;
+	/** Include only favorite Pokemon */
+	favorite: boolean;
+	/** Favorite color (null means any favorite color) */
+	favoriteColor: FavoriteColor | null;
 	/** Shiny or not */
 	shiny: boolean;
 	/** Filter ingredient */
@@ -39,6 +44,8 @@ interface IBoxFilterConfig {
 	subSkillAnd: boolean;
 	/** Include only Pokemon with a neutral nature */
 	neutralNature: boolean;
+	/** Include only Pokemon with a Neutralizing Mint used */
+	mint: boolean;
 	/** Nature effect that is increased (set to 'No effect' if unspecified) */
 	upNature: NatureEffect;
 	/** Nature effect that is decreased (set to 'No effect' if unspecified) */
@@ -57,6 +64,10 @@ export default class BoxFilterConfig implements IBoxFilterConfig {
 	filterSpecialty: PokemonSpecialty[];
 	/** Filter rarity ('all' means no filter) */
 	filterRarity: PokemonRarityFilter;
+	/** Include only favorite Pokemon */
+	favorite: boolean;
+	/** Favorite color (null means any favorite color) */
+	favoriteColor: FavoriteColor | null;
 	/** Shiny or not */
 	shiny: boolean;
 	/** Filter ingredient */
@@ -73,6 +84,8 @@ export default class BoxFilterConfig implements IBoxFilterConfig {
 	subSkillAnd: boolean;
 	/** Include only Pokemon with a neutral nature */
 	neutralNature: boolean;
+	/** Include only Pokemon with a Neutralizing Mint used */
+	mint: boolean;
 	/** Nature effect that is increased (set to 'No effect' if unspecified) */
 	upNature: NatureEffect;
 	/** Nature effect that is decreased (set to 'No effect' if unspecified) */
@@ -84,6 +97,8 @@ export default class BoxFilterConfig implements IBoxFilterConfig {
 		this.filterTypes = values.filterTypes ?? [];
 		this.filterSpecialty = values.filterSpecialty ?? [];
 		this.filterRarity = values.filterRarity ?? "all";
+		this.favorite = values.favorite ?? false;
+		this.favoriteColor = values.favoriteColor ?? null;
 		this.shiny = values.shiny ?? false;
 		this.ingredientName = values.ingredientName;
 		this.ingredientUnlockedOnly = values.ingredientUnlockedOnly ?? false;
@@ -92,6 +107,7 @@ export default class BoxFilterConfig implements IBoxFilterConfig {
 		this.subSkillUnlockedOnly = values.subSkillUnlockedOnly ?? true;
 		this.subSkillAnd = values.subSkillAnd ?? true;
 		this.neutralNature = values.neutralNature ?? false;
+		this.mint = values.mint ?? false;
 		this.upNature = values.upNature ?? "No effect";
 		this.downNature = values.downNature ?? "No effect";
 	}
@@ -157,6 +173,15 @@ export default class BoxFilterConfig implements IBoxFilterConfig {
 				return false;
 			}
 		}
+		if (this.favorite) {
+			const mask =
+				this.favoriteColor === null
+					? -1
+					: 1 << favoriteColors.indexOf(this.favoriteColor);
+			if ((item.favorites & mask) === 0) {
+				return false;
+			}
+		}
 		if (this.shiny && !item.iv.shiny) {
 			return false;
 		}
@@ -188,13 +213,17 @@ export default class BoxFilterConfig implements IBoxFilterConfig {
 				return false;
 			}
 		}
+		if (this.mint && !item.iv.nature.mint) {
+			return false;
+		}
+		// Up/down effects are matched by the original nature (ignore mint)
 		if (this.upNature !== "No effect") {
-			if (item.iv.nature.upEffect !== this.upNature) {
+			if (item.iv.nature.original.upEffect !== this.upNature) {
 				return false;
 			}
 		}
 		if (this.downNature !== "No effect") {
-			if (item.iv.nature.downEffect !== this.downNature) {
+			if (item.iv.nature.original.downEffect !== this.downNature) {
 				return false;
 			}
 		}
@@ -225,6 +254,7 @@ export default class BoxFilterConfig implements IBoxFilterConfig {
 
 		if (
 			this.neutralNature ||
+			this.mint ||
 			this.upNature !== "No effect" ||
 			this.downNature !== "No effect"
 		) {
@@ -241,11 +271,13 @@ export default class BoxFilterConfig implements IBoxFilterConfig {
 			this.filterTypes.length === 0 &&
 			this.filterSpecialty.length === 0 &&
 			this.filterRarity === "all" &&
+			this.favorite === false &&
 			this.shiny === false &&
 			this.ingredientName === undefined &&
 			this.mainSkillNames.length === 0 &&
 			this.subSkillNames.length === 0 &&
 			this.neutralNature === false &&
+			this.mint === false &&
 			this.upNature === "No effect" &&
 			this.downNature === "No effect"
 		);

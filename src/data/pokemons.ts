@@ -22,7 +22,8 @@ export type ValidFormType =
 	| "Medium"
 	| "Large"
 	| "Jumbo"
-	| "Captain";
+	| "Captain"
+	| "Halloween2";
 
 export type FormType = undefined | ValidFormType;
 
@@ -182,6 +183,7 @@ export const IngredientNames: IngredientName[] = [
 	"coffee",
 	"pumpkin",
 	"avocado",
+	"nuts",
 ];
 
 export type IngredientName =
@@ -204,6 +206,7 @@ export type IngredientName =
 	| "coffee"
 	| "pumpkin"
 	| "avocado"
+	| "nuts"
 	| "unknown"
 	| "unknown1"
 	| "unknown2"
